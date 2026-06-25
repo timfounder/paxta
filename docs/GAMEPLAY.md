@@ -6,10 +6,20 @@
 > **Source of truth for numbers is the code**: `src/shared/constants/game.ts`.
 > The tables below mirror it. **If you change a constant, update this file in the
 > same pull request** (CODING_STANDARDS R-DOC-1).
+>
+> **Night-model note (design v1.0).** The detailed design suite
+> ([design/GDD](./design/GDD.md)) defines the shipping session as a **Night**
+> (10–15 min) and specifies **target tuning** (GDD §5) that supersedes the
+> short-shift values mirrored below. Phase 1 implementation will retune
+> `game.ts` to those targets; when it does, these mirror tables are updated in
+> the same PR. Until then, the tables reflect the *current code*.
 
-## 1. The core loop (a "Shift")
+## 1. The core loop (within a Night)
 
-A play session is a **Shift**. One Shift is the atomic unit of PAXTA.
+A play **session** is a **Night** — the in-fiction night *shift* — a single
+10–15 minute session of six in-game hours (00:00→06:00), owned by
+[design/NIGHT_PROGRESSION](./design/NIGHT_PROGRESSION.md). The moment-to-moment
+loop below is the seconds-long heartbeat *inside* that Night.
 
 ```
 ENTER  → OBSERVE → DECIDE → REPORT → CONSEQUENCE → (repeat) → END
@@ -23,10 +33,12 @@ ENTER  → OBSERVE → DECIDE → REPORT → CONSEQUENCE → (repeat) → END
 4. **Report** — press **REPORT** to assert "an anomaly is present here, now."
 5. **Consequence** — correct report = caught (score up, Sanity stabilises);
    false alarm or a missed anomaly = penalty (score down, Sanity drains).
-6. **End** — the Shift ends on objective completion, voluntary exit, or **death**
+6. **End** — the Night ends at **dawn (06:00)**, voluntary exit, or **death**
    (Sanity hits 0).
 
-Target Shift length: **3–7 minutes** (VISION §8). Tune spawn pacing to fit.
+Target session length: **10–15 minutes** — one Night
+([design/NIGHT_PROGRESSION](./design/NIGHT_PROGRESSION.md)). Spawn pacing follows
+the Night's hour curve, not a flat rate (design/DIFFICULTY_CURVE).
 
 ## 2. Sanity — the core resource
 

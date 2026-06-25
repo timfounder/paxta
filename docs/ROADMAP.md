@@ -107,8 +107,8 @@ Deliverables:
 - **Balance pass** driven by data (GAMEPLAY balance protocol).
 - **Live config** for tuning constants without a redeploy (still code-owned defaults).
 
-**DoD / exit criteria (gate to 1.0):** D1 ≥ 35 %, D7 ≥ 12 %, median session 3–7
-min, crash-free ≥ 99.5 % on the soft-launch cohort (VISION §8).
+**DoD / exit criteria (gate to 1.0):** D1 ≥ 35 %, D7 ≥ 12 %, median session
+10–15 min (one Night), crash-free ≥ 99.5 % on the soft-launch cohort (VISION §8).
 
 ---
 

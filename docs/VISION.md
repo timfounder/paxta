@@ -6,7 +6,7 @@
 ## 1. One-line pitch
 
 **PAXTA is a first-person psychological horror game about noticing what is
-wrong — played in 5-minute shifts inside Telegram.**
+wrong — played in 10–15-minute Nights inside Telegram.**
 
 You are a **Custodian**: a night-shift observer assigned to PAXTA, a building
 that exists in the places reality forgets. Your job is to walk its corridors,
@@ -20,8 +20,9 @@ spot **anomalies** (things that have drifted from how they should be), and
   users, native payments (Stars/TON), instant launch, viral chat distribution,
   zero app-store friction. Horror is virtually absent there. PAXTA owns that gap.
 - **The anomaly-spotting loop is mobile-perfect.** It is stationary-friendly,
-  glanceable, pausable, and tense in seconds — ideal for a chat-embedded
-  micro-session.
+  glanceable, pausable, and tense in seconds — ideal for a chat-embedded,
+  self-contained 10–15 minute session (a "Night"; see
+  [design/GDD](./design/GDD.md) §3).
 - **Horror travels in chat.** Fear is the most shareable emotion. A scare clip,
   a referral, a "did you survive Shift 7?" challenge is native to Telegram.
 
@@ -104,7 +105,7 @@ These are the only metrics that override "make it scarier":
 | Time-to-first-dread | ≤ 10 s | Pillar 1 + onboarding works |
 | D1 retention | ≥ 35 % | The loop is compelling |
 | D7 retention | ≥ 12 % | Live-ops / story pull works |
-| Median session length | 3–7 min | Telegram-native pacing (P3) |
+| Median session length | 10–15 min (one Night) | Telegram-native pacing (P3); see design/GDD §3 |
 | Sessions/day/active | ≥ 2 | Habit, not chore |
 | Free→paid conversion | ≥ 3 % | Model viable without coercion |
 | Crash-free sessions | ≥ 99.5 % | Trust, on low-end devices |

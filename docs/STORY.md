@@ -27,7 +27,8 @@ These terms are **binding** across code, UI, and docs. Do not introduce synonyms
 | --- | --- | --- |
 | **PAXTA** | The department/program and, colloquially, the building it watches. Always all-caps. | Yes |
 | **Custodian** | The player's role/title. | Yes |
-| **Shift** | One play session (one Watch). | Yes |
+| **Night** | One play session = the canonical session unit (10–15 min; design/GDD §3). | Yes |
+| **Shift** | The in-fiction name for the night's duty. **One Shift = one Night.** | Yes |
 | **The Supervisor** | The off-screen handler who issues directives. | Yes |
 | **Anomaly** | A localised wrongness to report. Matches code `Anomaly`. | Yes |
 | **The Drift** | The force of decay anomalies are symptoms of. | Yes (sparingly) |
@@ -55,7 +56,8 @@ lore-dumps. One earned ambiguity beats ten answered questions.
 
 ## 4. Narrative delivery rules
 
-PAXTA is played in 5-minute bursts on a phone, often muted. Story must survive that.
+PAXTA is played in 10–15-minute Nights on a phone, often muted, and often
+interrupted. Story must survive that.
 
 - **R-NAR-1 No blocking cutscenes.** Story is delivered through the environment,
   short Supervisor lines, and found text. The player can always move.
