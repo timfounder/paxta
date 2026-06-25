@@ -3,12 +3,17 @@ import type { GameEventMap } from '@core/events/gameEvents';
 import type { ObjectiveId, QuestId } from '@shared/types/branded';
 import { logger } from '@shared/utils/logger';
 
-import { QuestStatus, type QuestDefinition, type QuestProgress } from './quest.types';
+import {
+  QuestStatus,
+  type QuestDefinition,
+  type QuestProgress,
+  type StartedQuestStatus,
+} from './quest.types';
 
 /** Immutable read-model of a quest's progress for the UI / persistence. */
 export interface QuestSnapshot {
   readonly questId: QuestId;
-  readonly status: QuestStatus;
+  readonly status: StartedQuestStatus;
   readonly completedObjectives: readonly ObjectiveId[];
 }
 

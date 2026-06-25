@@ -23,6 +23,14 @@ const KINDS: readonly AnomalyKind[] = [
   AnomalyKind.Environmental,
 ];
 
+/** Collaborators the {@link AnomalySystem} depends on, injected as one bundle. */
+export interface AnomalySystemDeps {
+  readonly world: World;
+  readonly events: EventBus<GameEventMap>;
+  readonly vitals: PlayerVitals;
+  readonly score: ScoreBoard;
+}
+
 /**
  * Drives PAXTA's central loop: anomalies appear over time, drain the player's
  * sanity while present, and must be reported before they expire. The system
@@ -33,8 +41,14 @@ const KINDS: readonly AnomalyKind[] = [
  */
 export class AnomalySystem {
   private readonly log = logger.child('anomaly');
+  private readonly world: World;
+  private readonly events: EventBus<GameEventMap>;
+  private readonly vitals: PlayerVitals;
+  private readonly score: ScoreBoard;
+
   private readonly active = new Map<AnomalyId, Anomaly>();
   private readonly entityToAnomaly = new Map<EntityId, AnomalyId>();
+  private readonly anomalyToEntity = new Map<AnomalyId, EntityId>();
 
   private config: AnomalySpawnConfig | null = null;
   private elapsed = 0;
@@ -42,12 +56,12 @@ export class AnomalySystem {
   private running = false;
   private unsubscribeRemoval: Unsubscribe | null = null;
 
-  constructor(
-    private readonly world: World,
-    private readonly events: EventBus<GameEventMap>,
-    private readonly vitals: PlayerVitals,
-    private readonly score: ScoreBoard,
-  ) {}
+  constructor(deps: AnomalySystemDeps) {
+    this.world = deps.world;
+    this.events = deps.events;
+    this.vitals = deps.vitals;
+    this.score = deps.score;
+  }
 
   public get activeCount(): number {
     return this.active.size;
@@ -103,6 +117,7 @@ export class AnomalySystem {
     this.config = null;
     this.active.clear();
     this.entityToAnomaly.clear();
+    this.anomalyToEntity.clear();
     this.unsubscribeRemoval?.();
     this.unsubscribeRemoval = null;
   }
@@ -133,17 +148,21 @@ export class AnomalySystem {
 
     this.active.set(id, anomaly);
     this.entityToAnomaly.set(entity.id, id);
+    this.anomalyToEntity.set(id, entity.id);
     this.events.emit('anomaly:spawned', { anomalyId: id, sceneId: anomaly.sceneId });
     this.log.debug(`Spawned ${kind} anomaly ${id}`);
   }
 
   private resolve(id: AnomalyId): void {
-    const anomaly = this.active.get(id);
-    if (!anomaly) return;
-    // Remove from the active set first so the removal handler does not also
-    // count this as a miss.
-    this.active.delete(id);
-    this.forgetEntity(id);
+    if (!this.active.delete(id)) return;
+    // Drop the index mapping *before* removing the entity so the removal
+    // handler does not also count this resolved anomaly as a miss.
+    const entityId = this.anomalyToEntity.get(id);
+    if (entityId !== undefined) {
+      this.anomalyToEntity.delete(id);
+      this.entityToAnomaly.delete(entityId);
+      this.world.removeEntity(entityId);
+    }
     this.events.emit('anomaly:reported', { anomalyId: id, correct: true });
     this.events.emit('anomaly:resolved', { anomalyId: id });
     this.score.recordHit();
@@ -151,8 +170,9 @@ export class AnomalySystem {
 
   private handleEntityRemoved(entityId: EntityId): void {
     const anomalyId = this.entityToAnomaly.get(entityId);
-    if (!anomalyId) return;
+    if (anomalyId === undefined) return;
     this.entityToAnomaly.delete(entityId);
+    this.anomalyToEntity.delete(anomalyId);
     if (this.active.delete(anomalyId)) {
       // Still active when its entity expired → the player missed it.
       this.events.emit('anomaly:missed', { anomalyId });
@@ -172,15 +192,5 @@ export class AnomalySystem {
   private firstActive(): Anomaly | undefined {
     for (const anomaly of this.active.values()) return anomaly;
     return undefined;
-  }
-
-  private forgetEntity(anomalyId: AnomalyId): void {
-    for (const [entityId, mappedId] of this.entityToAnomaly) {
-      if (mappedId === anomalyId) {
-        this.entityToAnomaly.delete(entityId);
-        this.world.removeEntity(entityId);
-        return;
-      }
-    }
   }
 }

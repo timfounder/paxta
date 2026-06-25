@@ -1,4 +1,4 @@
-import type { Game } from '@app/Game';
+import type { Game } from '@game/Game';
 import { useGameStore } from '@state/gameStore';
 
 import { SanityBar } from './SanityBar';

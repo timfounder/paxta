@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 const fromRoot = (segment: string): string => resolve(process.cwd(), segment);
 
@@ -21,6 +21,7 @@ export default defineConfig({
       '@app': fromRoot('src/app'),
       '@core': fromRoot('src/core'),
       '@engine': fromRoot('src/engine'),
+      '@game': fromRoot('src/game'),
       '@systems': fromRoot('src/systems'),
       '@state': fromRoot('src/state'),
       '@telegram': fromRoot('src/telegram'),
@@ -40,9 +41,10 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: false,
-    // Babylon's engine is intentionally isolated into its own long-lived chunk;
-    // it is large but cached across sessions and loaded once, so we lift the
-    // warning threshold rather than fragment it into many small requests.
+    // Babylon's engine is loaded on demand (see Game.ensureEngine) and isolated
+    // into its own long-lived chunk: large, but fetched only when a run starts
+    // and cached across sessions. We lift the warning threshold accordingly
+    // rather than fragment it into many small requests.
     chunkSizeWarningLimit: 6000,
     rollupOptions: {
       output: {
@@ -52,5 +54,10 @@ export default defineConfig({
         },
       },
     },
+  },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+    globals: false,
   },
 });

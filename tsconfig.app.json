@@ -33,6 +33,7 @@
       "@app/*": ["src/app/*"],
       "@core/*": ["src/core/*"],
       "@engine/*": ["src/engine/*"],
+      "@game/*": ["src/game/*"],
       "@systems/*": ["src/systems/*"],
       "@state/*": ["src/state/*"],
       "@telegram/*": ["src/telegram/*"],

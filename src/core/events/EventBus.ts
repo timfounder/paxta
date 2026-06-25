@@ -1,3 +1,5 @@
+import type { Unsubscribe } from '@shared/types/function';
+
 /**
  * A generic, strongly-typed publish/subscribe bus. It has zero domain
  * knowledge — the concrete event map is supplied by the consumer — which keeps
@@ -5,7 +7,7 @@
  */
 export type EventHandler<TPayload> = (payload: TPayload) => void;
 
-export type Unsubscribe = () => void;
+export type { Unsubscribe };
 
 /** The read/subscribe surface, handed to consumers that must not emit. */
 export interface ReadonlyEventBus<TEventMap> {

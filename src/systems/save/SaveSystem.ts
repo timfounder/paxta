@@ -2,6 +2,7 @@ import type { EventBus } from '@core/events/EventBus';
 import type { GameEventMap } from '@core/events/gameEvents';
 import { GAME } from '@shared/constants/game';
 import type { SaveSlotId } from '@shared/types/branded';
+import type { Clock } from '@shared/types/function';
 import { err, ok, type Result } from '@shared/utils/result';
 import { logger } from '@shared/utils/logger';
 
@@ -10,8 +11,7 @@ import type { SaveData, SaveRepository, SaveSlotMeta } from './save.types';
 /** Everything needed to persist a save except the fields the system stamps. */
 export type SaveDraft = Omit<SaveData, 'version' | 'savedAt'>;
 
-/** Function that returns the current timestamp; injectable for determinism. */
-export type Clock = () => number;
+export type { Clock };
 
 /**
  * Coordinates persistence: it stamps version/time, delegates storage to a

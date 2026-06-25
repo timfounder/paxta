@@ -1,7 +1,6 @@
-import { GameEngine } from '@engine/GameEngine';
+import type { GameEngine } from '@engine/GameEngine';
 import { isReportingScene } from '@engine/scenes/contracts';
 import { SceneIds } from '@engine/scenes/sceneIds';
-import { HallwayScene } from '@engine/scenes/locations/HallwayScene';
 import { gameEvents } from '@core/events/gameEvents';
 import type { Unsubscribe } from '@core/events/EventBus';
 import { GamePhase, useGameStore } from '@state/gameStore';
@@ -15,13 +14,12 @@ import { SaveSystem, type SaveDraft } from '@systems/save/SaveSystem';
 import { QuestSystem } from '@systems/quest/QuestSystem';
 import { telegram } from '@telegram/TelegramService';
 import { asBrand, type SaveSlotId } from '@shared/types/branded';
-import type { Vec3 } from '@shared/types/spatial';
-import { ZERO_VEC3 } from '@shared/types/spatial';
-import { type Result } from '@shared/utils/result';
+import { ZERO_VEC3, type Vec3 } from '@shared/types/spatial';
+import type { Result } from '@shared/utils/result';
 import { logger } from '@shared/utils/logger';
 
 import { CHAPTER_ONE, ENDURE_TARGET, Objectives, Quests } from './content/quests';
-import type { GameServices } from './services/GameServices';
+import type { GameServices } from './GameServices';
 
 const DEFAULT_SLOT = asBrand<SaveSlotId>('autosave');
 
@@ -30,23 +28,29 @@ const DEFAULT_SLOT = asBrand<SaveSlotId>('autosave');
  * object for commands (new game, report, pause, save); everything reactive
  * flows back through the Zustand stores. It owns construction and wiring of
  * every system so no other module needs to know how they fit together.
+ *
+ * The Babylon-backed {@link GameEngine} (and its large bundle) is created lazily
+ * on the first {@link newGame} call, so the menu and loading screens ship
+ * without the renderer in the initial payload.
  */
 export class Game {
   private readonly log = logger.child('game');
-  private readonly engine: GameEngine;
+  private readonly canvas: HTMLCanvasElement;
   private readonly audio = new AudioManager();
   private readonly quests = new QuestSystem(gameEvents);
   private readonly saves: SaveSystem;
+  private readonly services: GameServices;
   private readonly subscriptions: Unsubscribe[] = [];
 
+  private engine: GameEngine | null = null;
+  private enginePromise: Promise<GameEngine> | null = null;
   private lastPlayerPosition: Vec3 = ZERO_VEC3;
   private disposed = false;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.engine = new GameEngine({ canvas, events: gameEvents });
+    this.canvas = canvas;
     this.saves = new SaveSystem(new LocalStorageSaveRepository(), gameEvents);
-
-    const services: GameServices = {
+    this.services = {
       audio: this.audio,
       quests: this.quests,
       vitals: this.createVitals(),
@@ -54,8 +58,6 @@ export class Game {
     };
 
     this.quests.define(CHAPTER_ONE);
-    this.engine.scenes.register(SceneIds.Hallway, (ctx) => new HallwayScene(ctx, services));
-
     this.wireEvents();
     this.wireSettings();
   }
@@ -69,49 +71,51 @@ export class Game {
     useGameStore.getState().setPhase(GamePhase.Playing);
     this.quests.start(Quests.Chapter1);
 
-    await this.engine.scenes.transitionTo(SceneIds.Hallway);
+    const engine = await this.ensureEngine();
+    if (this.disposed) return;
+
+    await engine.scenes.transitionTo(SceneIds.Hallway);
     useGameStore.getState().setScene(SceneIds.Hallway);
 
-    this.engine.start();
+    engine.start();
     useUiStore.getState().setScreen(Screen.Game);
     useUiStore.getState().setHudVisible(true);
   }
 
   /** The player asserts an anomaly is present in the current scene. */
   public reportAnomaly(): void {
-    const scene = this.engine.scenes.activeScene;
+    const scene = this.engine?.scenes.activeScene;
     if (scene && isReportingScene(scene)) {
       scene.report();
     }
   }
 
   public pause(): void {
-    this.engine.pause('manual');
+    this.engine?.pause('manual');
     useGameStore.getState().setPhase(GamePhase.Paused);
   }
 
   public resume(): void {
-    this.engine.resume('manual');
+    this.engine?.resume('manual');
     useGameStore.getState().setPhase(GamePhase.Playing);
   }
 
   public resize(): void {
-    this.engine.resize();
+    this.engine?.resize();
   }
 
   // -- Persistence -----------------------------------------------------------
 
   public save(slotId: SaveSlotId = DEFAULT_SLOT): Promise<Result<void>> {
     const game = useGameStore.getState();
-    const sceneId = game.currentSceneId ?? SceneIds.Hallway;
     const draft: SaveDraft = {
       slotId,
-      currentSceneId: sceneId,
+      currentSceneId: game.currentSceneId ?? SceneIds.Hallway,
       player: { position: this.lastPlayerPosition, sanity: game.sanity },
       progress: { score: game.score, hits: game.hits, misses: game.misses },
       quests: this.quests.snapshot().map((snapshot) => ({
         questId: snapshot.questId,
-        status: snapshot.status === 'inactive' ? 'active' : snapshot.status,
+        status: snapshot.status,
         completedObjectives: [...snapshot.completedObjectives],
       })),
     };
@@ -124,8 +128,27 @@ export class Game {
     for (const unsubscribe of this.subscriptions) unsubscribe();
     this.subscriptions.length = 0;
     this.audio.dispose();
-    this.engine.dispose();
+    this.engine?.dispose();
     this.log.info('Game disposed');
+  }
+
+  // -- Lazy engine -----------------------------------------------------------
+
+  /** Resolve the engine, constructing it (and loading Babylon) exactly once. */
+  private ensureEngine(): Promise<GameEngine> {
+    return (this.enginePromise ??= this.createEngine());
+  }
+
+  private async createEngine(): Promise<GameEngine> {
+    const [{ GameEngine }, { HallwayScene }] = await Promise.all([
+      import('@engine/GameEngine'),
+      import('./scenes/HallwayScene'),
+    ]);
+    const engine = new GameEngine({ canvas: this.canvas, events: gameEvents });
+    engine.scenes.register(SceneIds.Hallway, (ctx) => new HallwayScene(ctx, this.services));
+    this.engine = engine;
+    this.log.info('Engine initialised (Babylon loaded)');
+    return engine;
   }
 
   // -- Wiring ----------------------------------------------------------------

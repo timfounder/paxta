@@ -1,10 +1,11 @@
 import type { EntityId } from '@shared/types/branded';
+import type { Unsubscribe } from '@shared/types/function';
 
 import type { Entity } from './Entity';
 import type { System } from './System';
 
 export type EntityLifecycleHandler = (entity: Entity) => void;
-export type Unsubscribe = () => void;
+export type { Unsubscribe };
 
 /**
  * The World owns the set of live entities and the ordered list of systems that

@@ -8,7 +8,11 @@ import type { GameEventMap } from '@core/events/gameEvents';
 import { PLAYER } from '@shared/constants/game';
 import type { Vec3 } from '@shared/types/spatial';
 
+/** Below this squared horizontal delta a frame counts as "not moved". */
 const MOVE_EPSILON = 0.0001;
+
+/** Maps the design move-speed (world units/s) onto Babylon's camera speed unit. */
+const CAMERA_SPEED_FACTOR = 0.05;
 
 /**
  * First-person player. It bridges Babylon input (the {@link UniversalCamera})
@@ -32,7 +36,7 @@ export class PlayerController {
   ) {
     const eyePosition = new Vector3(spawn.x, spawn.y + PLAYER.EYE_HEIGHT, spawn.z);
     this.camera = new UniversalCamera('player-camera', eyePosition, scene);
-    this.camera.speed = PLAYER.MOVE_SPEED * GAME_SPEED_FACTOR;
+    this.camera.speed = PLAYER.MOVE_SPEED * CAMERA_SPEED_FACTOR;
     this.camera.angularSensibility = 1 / PLAYER.LOOK_SENSITIVITY;
     this.camera.minZ = 0.1;
     this.camera.inertia = 0.6;
@@ -53,14 +57,6 @@ export class PlayerController {
 
   public get entityId(): Entity['id'] {
     return this.entity.id;
-  }
-
-  /** Apply an external movement impulse (e.g. from on-screen touch controls). */
-  public move(direction: Vec3, deltaSeconds: number): void {
-    const step = PLAYER.MOVE_SPEED * deltaSeconds;
-    this.camera.position.addInPlace(
-      new Vector3(direction.x * step, direction.y * step, direction.z * step),
-    );
   }
 
   public update(_deltaSeconds: number): void {
@@ -85,6 +81,3 @@ export class PlayerController {
     this.world.removeEntity(this.entity.id);
   }
 }
-
-/** Tuning factor mapping the design move-speed to Babylon's camera speed units. */
-const GAME_SPEED_FACTOR = 0.05;

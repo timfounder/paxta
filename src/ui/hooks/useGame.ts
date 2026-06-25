@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Game } from '@app/Game';
+import { Game } from '@game/Game';
 import { telegram } from '@telegram/TelegramService';
 
 /**

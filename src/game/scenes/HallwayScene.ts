@@ -9,14 +9,14 @@ import {
   Vector3,
 } from '@babylonjs/core';
 
-import type { GameServices } from '@app/services/GameServices';
+import { PlayerController } from '@engine/player/PlayerController';
+import { BaseScene, type SceneContext } from '@engine/scenes/BaseScene';
+import { SceneIds } from '@engine/scenes/sceneIds';
 import type { SceneId } from '@shared/types/branded';
 import type { Vec3 } from '@shared/types/spatial';
 import { AnomalySystem } from '@systems/anomaly/AnomalySystem';
 
-import { BaseScene, type SceneContext } from '../BaseScene';
-import { SceneIds } from '../sceneIds';
-import { PlayerController } from '../../player/PlayerController';
+import type { GameServices } from '../GameServices';
 
 const SPAWN: Vec3 = { x: 0, y: 0, z: -8 };
 
@@ -59,12 +59,12 @@ export class HallwayScene extends BaseScene {
     this.buildLighting(scene);
 
     this.player = new PlayerController(scene, this.context.world, this.context.events, SPAWN);
-    this.anomalies = new AnomalySystem(
-      this.context.world,
-      this.context.events,
-      this.services.vitals,
-      this.services.score,
-    );
+    this.anomalies = new AnomalySystem({
+      world: this.context.world,
+      events: this.context.events,
+      vitals: this.services.vitals,
+      score: this.services.score,
+    });
     this.anomalies.start({ sceneId: this.id, anchors: ANCHORS });
 
     return Promise.resolve();

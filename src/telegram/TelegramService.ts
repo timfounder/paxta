@@ -1,3 +1,4 @@
+import type { Unsubscribe } from '@shared/types/function';
 import { logger } from '@shared/utils/logger';
 
 import type {
@@ -6,8 +7,6 @@ import type {
   TelegramUser,
   TelegramWebApp,
 } from './telegram.types';
-
-export type Unsubscribe = () => void;
 
 const FALLBACK_THEME: TelegramThemeParams = {
   bg_color: '#0a0a0c',

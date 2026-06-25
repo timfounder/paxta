@@ -1,4 +1,4 @@
-import type { Game } from '@app/Game';
+import type { Game } from '@game/Game';
 import { GamePhase, useGameStore } from '@state/gameStore';
 import { Screen, useUiStore } from '@state/uiStore';
 

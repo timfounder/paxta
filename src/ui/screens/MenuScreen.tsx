@@ -1,4 +1,4 @@
-import type { Game } from '@app/Game';
+import type { Game } from '@game/Game';
 import { appConfig } from '@app/config/env';
 import { Screen, useUiStore } from '@state/uiStore';
 import { telegram } from '@telegram/TelegramService';

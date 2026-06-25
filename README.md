@@ -29,6 +29,8 @@ as your bot's Mini App URL via @BotFather.
 | `npm run typecheck`    | Type-check without emitting                  |
 | `npm run lint`         | ESLint (zero warnings allowed)               |
 | `npm run lint:fix`     | ESLint with autofix                          |
+| `npm run test`         | Run the Vitest unit suite once               |
+| `npm run test:watch`   | Vitest in watch mode                         |
 | `npm run format`       | Format with Prettier                         |
 | `npm run format:check` | Verify formatting                            |
 
@@ -44,21 +46,35 @@ src/
 ├── core/          Engine-agnostic domain core
 │   ├── events/      Typed publish/subscribe bus + the GameEventMap contract
 │   └── ecs/         Entity · Component · System · World (data-oriented model)
-├── engine/        Babylon.js integration
-│   ├── GameEngine   Composition root for the render loop + world + scenes
-│   ├── scenes/      SceneManager, BaseScene lifecycle, concrete locations
+├── engine/        Generic Babylon.js integration (no concrete game content)
+│   ├── GameEngine   Render loop owning the world + scene manager
+│   ├── scenes/      SceneManager, BaseScene lifecycle, scene contracts/ids
 │   └── player/      First-person PlayerController (camera ↔ entity bridge)
 ├── systems/       Self-contained game systems (one responsibility each)
 │   ├── audio/       AudioManager — channel mixing, mute, mobile unlock
 │   ├── save/        SaveSystem + SaveRepository port (localStorage adapter)
 │   ├── quest/       QuestSystem — quest/objective state machine
 │   └── anomaly/     AnomalySystem — spawn, sanity drain, report/miss scoring
+├── game/          Concrete game: composition root + content (uses engine+systems)
+│   ├── Game         The façade React drives; wires every system together
+│   ├── scenes/      Concrete locations (HallwayScene)
+│   └── content/     Quest/objective definitions
 ├── state/         Zustand stores: gameStore, uiStore, settingsStore
 ├── telegram/      Fail-safe wrapper over the Telegram Mini Apps platform
 ├── services/      External integrations (Supabase client — prepared)
-├── app/           Composition root (Game), env config, content, services
+├── app/           App-wide configuration (validated environment)
 └── ui/            React components, screens, hooks and styles
 ```
+
+Pure-logic modules (`core`, `systems`, `shared`) are covered by a Vitest suite
+(`*.test.ts` co-located with the code under test).
+
+### Performance
+
+The Babylon engine (~1.1 MB gzip) is **loaded on demand**: `Game.ensureEngine()`
+dynamically imports the engine and the first scene only when a run starts, so
+the menu and loading screens ship without the renderer. The HUD also selects
+*rounded* derived state from the stores to avoid re-rendering every frame.
 
 ### Design principles
 

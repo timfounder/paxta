@@ -12,8 +12,11 @@ const colorFor = (percent: number): string => {
 
 /** Visualises the player's sanity — the core survival resource. */
 export const SanityBar = (): React.JSX.Element => {
-  const sanity = useGameStore((state) => state.sanity);
-  const percent = clamp((sanity / PLAYER.SANITY_MAX) * 100, 0, 100);
+  // Select the rounded percentage so the bar re-renders at most once per whole
+  // percent rather than on every (continuous) per-frame sanity change.
+  const percent = useGameStore((state) =>
+    Math.round(clamp((state.sanity / PLAYER.SANITY_MAX) * 100, 0, 100)),
+  );
   const fillStyle: CSSProperties = {
     width: `${percent}%`,
     backgroundColor: colorFor(percent),
