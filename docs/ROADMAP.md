@@ -1,8 +1,13 @@
 # ROADMAP
 
-> Owner of: milestone sequencing, deliverables, and definition of done. This is
-> the order we build PAXTA. Scope is fixed by the pillars; only sequence is
-> negotiable.
+> Owner of: **product phases**, their deliverables, and phase-level exit metrics.
+> This is the high-level order we build PAXTA. Scope is fixed by the pillars; only
+> sequence is negotiable.
+>
+> The **fine-grained engineering plan** — independently-playable milestones
+> (M0–M12), the system dependency graph, and the continuous-release strategy —
+> lives in [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md). Each phase below
+> maps to a set of milestones there (see its §8).
 
 ## Versioning & cadence
 

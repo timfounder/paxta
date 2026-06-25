@@ -26,8 +26,11 @@ New contributors read in this order:
 5. [CODING_STANDARDS](./CODING_STANDARDS.md) — how we write that code.
 6. [UI_GUIDELINES](./UI_GUIDELINES.md), [AUDIO_GUIDELINES](./AUDIO_GUIDELINES.md),
    [PERFORMANCE](./PERFORMANCE.md) — craft constraints.
-7. [ROADMAP](./ROADMAP.md) — sequence of work.
-8. [design/GDD](./design/GDD.md) — the full Game Design Document suite (the
+7. [ROADMAP](./ROADMAP.md) — product phases and exit metrics.
+8. [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) — the engineering
+   milestone plan (M0–M12), system dependency graph, and continuous-release
+   strategy. Each milestone is independently playable.
+9. [design/GDD](./design/GDD.md) — the full Game Design Document suite (the
    designed game in detail: loop, Night, difficulty, missions, anomalies,
    pacing, rewards, save, failure, replay, progression, expansion).
 
@@ -46,7 +49,8 @@ a number that another document owns.
 | Visual tokens, screens, HUD, interaction | [UI_GUIDELINES](./UI_GUIDELINES.md) |
 | Audio channels, mixing, formats | [AUDIO_GUIDELINES](./AUDIO_GUIDELINES.md) |
 | Budgets, frame timing, profiling | [PERFORMANCE](./PERFORMANCE.md) |
-| Milestones, sequencing, definition of done | [ROADMAP](./ROADMAP.md) |
+| Product phases, exit metrics, phase DoD | [ROADMAP](./ROADMAP.md) |
+| Engineering milestones, system dependency graph, release strategy | [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) |
 | TS/lint/test conventions, naming, commits | [CODING_STANDARDS](./CODING_STANDARDS.md) |
 | **Session model (the Night), detailed design, target tuning** | [design/GDD](./design/GDD.md) + suite |
 
