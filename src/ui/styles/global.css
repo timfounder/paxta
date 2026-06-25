@@ -1,0 +1,361 @@
+:root {
+  /* Telegram theme variables; the service overrides these at runtime. */
+  --tg-bg: #0a0a0c;
+  --tg-text: #f5f5f7;
+  --tg-hint: #8a8a92;
+  --tg-button: #b3122b;
+  --tg-button-text: #ffffff;
+  --tg-secondary-bg: #15151a;
+
+  --danger: #b3122b;
+  --safe: #2f9e44;
+  --warning: #e8a317;
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  --radius: 0.75rem;
+  --font: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  font-family: var(--font);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+  touch-action: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--space-lg) + env(safe-area-inset-top)) var(--space-lg)
+    calc(var(--space-lg) + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.overlay > * {
+  pointer-events: auto;
+}
+
+/* -- Screens -------------------------------------------------------------- */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+}
+
+.screen--menu,
+.screen--gameover {
+  background: radial-gradient(circle at 50% 30%, rgba(179, 18, 43, 0.18), var(--tg-bg) 70%);
+}
+
+.title {
+  font-size: clamp(2.5rem, 14vw, 4.5rem);
+  letter-spacing: 0.4em;
+  font-weight: 800;
+  text-shadow: 0 0 24px rgba(179, 18, 43, 0.6);
+}
+
+.subtitle {
+  color: var(--tg-hint);
+  max-width: 28ch;
+  line-height: 1.5;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: min(360px, 100%);
+}
+
+/* -- Buttons -------------------------------------------------------------- */
+
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    opacity 0.2s ease;
+  color: var(--tg-button-text);
+  background: var(--tg-button);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--ghost {
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* -- HUD ------------------------------------------------------------------ */
+
+.hud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(var(--space-lg) + env(safe-area-inset-top)) var(--space-lg)
+    calc(var(--space-lg) + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.hud__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.hud__bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.hud button {
+  pointer-events: auto;
+}
+
+.score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.sanity {
+  flex: 1;
+  max-width: 240px;
+}
+
+.sanity__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+}
+
+.sanity__track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--tg-secondary-bg);
+  overflow: hidden;
+  margin-top: var(--space-xs);
+}
+
+.sanity__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition:
+    width 0.2s linear,
+    background-color 0.4s ease;
+}
+
+.report-btn {
+  pointer-events: auto;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.18);
+  background: var(--danger);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+  box-shadow: 0 0 30px rgba(179, 18, 43, 0.55);
+}
+
+.report-btn:active {
+  transform: scale(0.93);
+}
+
+.icon-btn {
+  pointer-events: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border: none;
+  font-size: 1.2rem;
+  display: grid;
+  place-items: center;
+}
+
+/* -- Settings ------------------------------------------------------------- */
+
+.settings {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  text-align: left;
+}
+
+.field__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field label {
+  color: var(--tg-hint);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--tg-button);
+}
+
+.switch {
+  appearance: none;
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--tg-secondary-bg);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.switch:checked {
+  background: var(--tg-button);
+}
+
+.switch:checked::after {
+  transform: translateX(22px);
+}
+
+/* -- Toast ---------------------------------------------------------------- */
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(120px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.78);
+  color: var(--tg-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  max-width: 80vw;
+  text-align: center;
+  pointer-events: none;
+  animation: toast-in 0.2s ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid var(--tg-secondary-bg);
+  border-top-color: var(--tg-button);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
