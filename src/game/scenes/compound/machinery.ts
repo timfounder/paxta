@@ -1,16 +1,19 @@
-import { Color3, PointLight, Vector3, type Mesh, type Scene } from '@babylonjs/core';
+import type { Mesh, Scene } from '@babylonjs/core';
 
 import type { CompoundPalette } from './palette';
 import { box, pillar } from './primitives';
 
 export interface Machinery {
-  /** The generator housing — wired as an Interactable by the scene. */
+  /** The generator housing — wired as the power-source Interactable by the scene. */
   readonly generator: Mesh;
-  /** The generator's work-light — flickered each frame while powered. */
-  readonly generatorLight: PointLight;
 }
 
-/** A diesel generator (the interactable power source) and a water pump. */
+/**
+ * The site's static machinery geometry: a diesel generator housing (the
+ * interactable power source) and a hand pump. The generator's *light* and
+ * behaviour live with the other interactives — this module only builds the
+ * frozen, collidable shells.
+ */
 export const buildMachinery = (scene: Scene, palette: CompoundPalette): Machinery => {
   // -- Generator -------------------------------------------------------------
   const generator = box(
@@ -32,11 +35,6 @@ export const buildMachinery = (scene: Scene, palette: CompoundPalette): Machiner
     palette.metalDark,
     true,
   );
-
-  const generatorLight = new PointLight('generator-light', new Vector3(-4, 2.4, -8), scene);
-  generatorLight.diffuse = new Color3(1, 0.78, 0.5);
-  generatorLight.intensity = 1.2;
-  generatorLight.range = 14;
 
   // -- Water pump ------------------------------------------------------------
   box(scene, 'pump-base', { w: 1, h: 0.6, d: 1, x: -12, y: 0.3, z: -16 }, palette.pipe);
@@ -62,5 +60,5 @@ export const buildMachinery = (scene: Scene, palette: CompoundPalette): Machiner
     false,
   );
 
-  return { generator, generatorLight };
+  return { generator };
 };

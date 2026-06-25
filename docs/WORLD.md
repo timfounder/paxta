@@ -54,19 +54,19 @@ All authored to match the engine and player controller. **These are binding.**
 | Player collider | radius **0.35**, height **1.8** (crouch **1.2**) | `PLAYER.COLLIDER_RADIUS` / `STANDING_HEIGHT` |
 | Gravity | **−20** units/s² | `PLAYER.GRAVITY` |
 | Interaction reach | **2.6** units | `PLAYER.INTERACT_DISTANCE` |
-| Ground plane | y = 0 | `HallwayScene` |
-| Corridor width (reference) | ~6 units | `HallwayScene` floor width |
-| Ceiling height (reference) | ~3 units | `HallwayScene` ceiling |
+| Ground plane | y = 0 | `compound/terrain` |
+| Warehouse doorway (reference) | ~4 wide × ~5.5 tall units | `compound/buildings` |
+| Open-site depth budget | ~26 units per segment | `compound` extents |
 | Camera near plane | 0.1 | `PlayerController` |
 
 Rules:
 - **R-SCL-1** Build to human scale. A doorway is ~1×2 units; a corridor lets the
   player pass without precision steering at 3.2 u/s.
 - **R-SCL-2** Eye height is 1.7. Place "notice me" details and anomalies in the
-  **1.2–2.2 unit** vertical band where a standing Custodian looks. The Hallway
-  anchors already sit in this band (y 0.6–2.4).
-- **R-SCL-3** Keep playable corridors within a **~26-unit** depth budget per scene
-  segment (matches the Hallway) to bound draw distance and fog (PERFORMANCE).
+  **1.2–2.2 unit** vertical band where a standing Custodian looks. The compound's
+  interactables (switch, generator, door handle) sit in this band.
+- **R-SCL-3** Keep playable areas within a **~26-unit** depth budget per scene
+  segment (matches the compound) to bound draw distance and fog (PERFORMANCE).
 
 ## 4. Locations
 
@@ -74,23 +74,31 @@ Rules:
 | --- | --- | --- | --- |
 | **The Compound** | `CompoundScene` / `SceneIds.Compound` | Built | The primary explorable site (below). |
 | ↳ Guard house | `compound/buildings` | Built | Wooden hut at the road entrance. |
-| ↳ Warehouse | `compound/buildings` | Built | Large open-fronted shell you can enter. |
-| ↳ Generator | `compound/machinery` | Built | Interactable power source (toggles its work-light). |
+| ↳ Warehouse | `compound/buildings` | Built | Large open-fronted shell you can enter, with a hinged door. |
+| ↳ Warehouse door | `objects/Door` | Built | Hinged, openable/closable; blocks the doorway when closed. |
+| ↳ Generator | `objects/Generator` | Built | Power source: starts/stops the warehouse work-light. |
+| ↳ Entrance switch | `objects/Switch` | Built | Guard-house wall switch; toggles the entrance flood-light. |
+| ↳ Loose pickups | `objects/PickupItem` | Built | Small props (Rusted Key, Metal Tag) you can pick up / drop. |
 | ↳ Water pump | `compound/machinery` | Built | Roadside prop. |
 | ↳ Cotton field | `compound/vegetation` | Built | Instanced rows of cotton (plants + bolls). |
 | ↳ Tree line | `compound/vegetation` | Built | Instanced perimeter/roadside trees. |
-| The Hallway | `HallwayScene` / `SceneIds.Hallway` | Retired | Early test corridor; kept, not the default level. |
 
 Every location is a `BaseScene` subclass in `src/game/scenes/` and is registered
 under a `SceneId` (`src/engine/scenes/sceneIds.ts`). `CompoundScene` is the
 canonical template: a thin scene orchestrating small builder modules under
-`game/scenes/compound/` (palette · terrain · buildings · machinery · vegetation
-· lighting), with vegetation **instanced** for the mobile draw-call budget.
+`game/scenes/compound/` (palette · terrain · buildings · machinery · interactives
+· vegetation · lighting), with vegetation **instanced** for the mobile draw-call
+budget. The scene only *wires* behaviour: the `interactives` builder makes the
+door / switch / pickup geometry and the two switched lights, then the scene
+registers reusable `game/objects/` interactables (`Door`, `Switch`, `Generator`,
+`Lamp`, `PickupItem`) with the engine's `InteractionRegistry`. No gameplay logic
+lives in the scene or the geometry.
 
 ## 5. Anomaly placement: anchors
 
 Anomalies spawn at **anchors** — authored `Vec3` positions a scene passes to
-`AnomalySystem.start({ sceneId, anchors })`. The Hallway defines four.
+`AnomalySystem.start({ sceneId, anchors })`. No scene wires anchors yet; the
+compound gains them with the horror track (IMPLEMENTATION_ROADMAP).
 
 Anchor rules:
 - **R-ANC-1** Every anchor must be **visible from a reachable standing position**
@@ -105,7 +113,7 @@ Anchor rules:
 ## 6. Authoring a scene (checklist)
 
 To add a location:
-1. Create `src/game/scenes/<Name>Scene.ts` extending `BaseScene` (copy `HallwayScene`).
+1. Create `src/game/scenes/<Name>Scene.ts` extending `BaseScene` (copy `CompoundScene`).
 2. Add its id to `SceneIds` (`src/engine/scenes/sceneIds.ts`).
 3. Register it in the composition root (`Game.createEngine`) via a factory.
 4. In `onLoad`: build geometry, lighting, fog; spawn the `PlayerController`;

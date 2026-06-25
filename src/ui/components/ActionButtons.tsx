@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import type { Game } from '@game/Game';
+import { useInventoryStore } from '@state/inventoryStore';
 import { useUiStore } from '@state/uiStore';
 
 interface ActionButtonsProps {
@@ -9,10 +10,12 @@ interface ActionButtonsProps {
 
 /**
  * The thumb-side action cluster: a contextual Interact button (shown only when
- * something is focused), a Crouch toggle, and a hold-to-Sprint button.
+ * something is focused), a Drop button (only while carrying), a Crouch toggle,
+ * and a hold-to-Sprint button.
  */
 export const ActionButtons = ({ game }: ActionButtonsProps): React.JSX.Element => {
   const interactionPrompt = useUiStore((state) => state.interactionPrompt);
+  const carrying = useInventoryStore((state) => state.items.length > 0);
   const [crouched, setCrouched] = useState(false);
 
   const toggleCrouch = (): void => {
@@ -32,6 +35,11 @@ export const ActionButtons = ({ game }: ActionButtonsProps): React.JSX.Element =
           onClick={() => game?.interact()}
         >
           {interactionPrompt}
+        </button>
+      )}
+      {carrying && (
+        <button type="button" className="action-btn" onClick={() => game?.dropItem()}>
+          Drop
         </button>
       )}
       <button

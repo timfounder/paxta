@@ -11,21 +11,20 @@ import type { Vec3 } from '@shared/types/spatial';
 import { HeadBob } from './HeadBob';
 import { LookController } from './LookController';
 import { PlayerMotor } from './PlayerMotor';
-import { InteractionProbe } from './interaction/InteractionProbe';
 
 /**
  * First-person player core. A thin orchestrator that composes the camera with
- * four single-responsibility units — {@link PlayerMotor} (gravity/collision/
- * sprint/crouch), {@link LookController} (smoothed look), {@link HeadBob}, and
- * {@link InteractionProbe} — and keeps the player {@link Entity}'s transform in
- * sync. Input arrives from the mobile control layer via the scene contract.
+ * three single-responsibility units — {@link PlayerMotor} (gravity/collision/
+ * sprint/crouch), {@link LookController} (smoothed look) and {@link HeadBob} —
+ * and keeps the player {@link Entity}'s transform in sync. It owns *locomotion
+ * only*; interaction is a separate, scene-level system that reads the camera it
+ * exposes. Input arrives from the mobile control layer via the scene contract.
  */
 export class PlayerController {
-  private readonly camera: FreeCamera;
+  private readonly playerCamera: FreeCamera;
   private readonly motor: PlayerMotor;
   private readonly lookController: LookController;
   private readonly headBob: HeadBob;
-  private readonly probe: InteractionProbe;
   private readonly entity: Entity;
   private readonly transform: TransformComponent;
 
@@ -41,23 +40,32 @@ export class PlayerController {
     spawn: Vec3,
   ) {
     const eye = new Vector3(spawn.x, spawn.y + PLAYER.EYE_HEIGHT, spawn.z);
-    this.camera = new FreeCamera('player-camera', eye, scene);
-    this.camera.minZ = 0.1;
-    this.camera.maxZ = 60;
-    this.camera.fov = 0.95;
-    this.camera.rotation.set(0, 0, 0);
-    scene.activeCamera = this.camera;
+    this.playerCamera = new FreeCamera('player-camera', eye, scene);
+    this.playerCamera.minZ = 0.1;
+    this.playerCamera.maxZ = 60;
+    this.playerCamera.fov = 0.95;
+    this.playerCamera.rotation.set(0, 0, 0);
+    scene.activeCamera = this.playerCamera;
 
     this.motor = new PlayerMotor(scene, spawn);
-    this.lookController = new LookController(this.camera);
+    this.lookController = new LookController(this.playerCamera);
     this.headBob = new HeadBob();
-    this.probe = new InteractionProbe(scene, this.camera, this.events);
 
     this.transform = new TransformComponent(spawn);
     this.entity = new Entity('player').add(this.transform).add(new TagComponent(['player']));
     this.world.addEntity(this.entity);
 
     this.events.emit('player:spawned', { entityId: this.entity.id, position: spawn });
+  }
+
+  /** The first-person camera. The interaction system rays from it; read-only. */
+  public get camera(): FreeCamera {
+    return this.playerCamera;
+  }
+
+  /** The player's current eye-position in world space (live reference). */
+  public get position(): Vector3 {
+    return this.playerCamera.position;
   }
 
   public setMoveInput(x: number, z: number): void {
@@ -81,10 +89,6 @@ export class PlayerController {
     this.headBobEnabled = enabled;
   }
 
-  public interact(): void {
-    this.probe.interact();
-  }
-
   public update(deltaSeconds: number): void {
     this.lookController.update(deltaSeconds);
     const yaw = this.lookController.yawAngle;
@@ -97,22 +101,19 @@ export class PlayerController {
     const feetY = centre.y - this.motor.halfHeightValue;
     const eyeY = feetY + this.motor.currentEyeHeight + this.headBob.verticalOffset;
     const lateral = this.headBob.lateralOffset;
-    this.camera.position.set(
+    this.playerCamera.position.set(
       centre.x + Math.cos(yaw) * lateral,
       eyeY,
       centre.z - Math.sin(yaw) * lateral,
     );
-
-    this.probe.update(deltaSeconds);
 
     this.transform.setPosition({ x: centre.x, y: feetY, z: centre.z });
     this.transform.rotationY = yaw;
   }
 
   public dispose(): void {
-    this.probe.dispose();
     this.motor.dispose();
-    this.camera.dispose();
+    this.playerCamera.dispose();
     this.world.removeEntity(this.entity.id);
   }
 }

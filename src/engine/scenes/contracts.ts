@@ -27,6 +27,8 @@ export interface ControllableScene {
   setHeadBobEnabled(enabled: boolean): void;
   /** Trigger the focused interaction, if any. */
   interact(): void;
+  /** Drop the most recently picked-up item back into the world, if any. */
+  dropItem(): void;
 }
 
 export const isControllableScene = (value: unknown): value is ControllableScene => {
@@ -39,6 +41,7 @@ export const isControllableScene = (value: unknown): value is ControllableScene 
     typeof candidate.setSprint === 'function' &&
     typeof candidate.setCrouch === 'function' &&
     typeof candidate.setHeadBobEnabled === 'function' &&
-    typeof candidate.interact === 'function'
+    typeof candidate.interact === 'function' &&
+    typeof candidate.dropItem === 'function'
   );
 };

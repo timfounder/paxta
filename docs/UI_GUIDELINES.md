@@ -92,6 +92,28 @@ bottom-centre = REPORT.
 - **R-INT-5** Respect safe-area insets (`env(safe-area-inset-*)`) on every
   full-screen surface; the notch and home indicator must never cover controls.
 
+### 6a. World interaction (the M4 foundation)
+
+The exploration HUD adds a thin layer driven by the engine's interaction system.
+It is **state-mirrored, never authoritative**: components read `uiStore`
+(focused prompt) and `inventoryStore` (carried items) projections only.
+
+- **R-INT-6** The **reticle** marks where the interaction ray points and brightens
+  on focus (`interaction:focus-changed` → `uiStore.interactionPrompt`). It is the
+  single, always-centred focus cue.
+- **R-INT-7** The **interaction prompt** (`InteractionPrompt.tsx`) shows the
+  focused object's verb just below the reticle ("Open Door", "Pick Up Key"). It is
+  `pointer-events: none` — informational only; the tap action is the action
+  button. Hidden when nothing is focused.
+- **R-INT-8** The contextual **Interact** action button appears only while
+  something is focused; a **Drop** button appears only while carrying. Both sit in
+  the right-hand thumb cluster with crouch/sprint and obey R-INT-1/3.
+- **R-INT-9** The **inventory bar** (`InventoryBar.tsx`) is a small bottom-centre
+  row of item chips, hidden while empty. Foundation only — no slots, weight, or
+  use actions yet.
+- **R-INT-10** Desktop parity (dev convenience): `E`/`F` interact, `Q`/`G` drop —
+  but touch is the design target (R-INT-2).
+
 ## 7. Typography & copy
 
 - One type scale; the title is the only display-size element. Body ≥ 0.85rem so

@@ -153,9 +153,11 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 - **Architecture:** decomposed `engine/player/` — `PlayerMotor` (gravity +
   collision via an invisible ellipsoid collider + `moveWithCollisions`, sprint,
   crouch), `LookController` (smoothed yaw/pitch), `HeadBob` (pure), and
-  `interaction/` (`Interactable` interface + `InteractionProbe` forward ray),
-  orchestrated by a thin `PlayerController`. Extends the `ControllableScene`
-  contract (sprint/crouch/interact); adds interaction events + `uiStore` focus;
+  `interaction/` (`Interactable` interface + `InteractionProbe` forward ray —
+  **relocated to the scene-level interaction system in M4**; the player now only
+  exposes its camera), orchestrated by a thin `PlayerController`. Extends the
+  `ControllableScene` contract (sprint/crouch/interact); adds interaction events
+  + `uiStore` focus;
   HUD gains a reticle + sprint/crouch/interact buttons; `damp` smoothing util.
 - **Depends on:** M1 (controller, joystick/look UI, scene contract), GameEngine.
 - **Playable:** walk the Hallway with gravity, wall collision, sprint, crouch,
@@ -188,6 +190,47 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 - **Size:** L.
 
 ---
+
+### M4 — Core Gameplay Loop (interaction foundation) ✅
+> **Inserted before the horror track.** The Director scoped M4 as the universal
+> interaction + inventory foundation every future mechanic plugs into, built on
+> the M3 world. The horror milestones below keep their provisional numbers
+> (the M4–M12 there are planning placeholders, flagged by the banner) and will be
+> resequenced when reached.
+- **Goal:** one reusable interaction system every future mechanic plugs into
+  **without modification**.
+- **Architecture:** generic `engine/interaction/` — `Interactable` / `Activatable`
+  / `Stateful` / `Updatable` interfaces, an `InteractionRegistry` (mesh→object,
+  O(1) resolve), an `InteractionSystem` (throttled camera forward-ray, focus,
+  dispatch) and a per-mesh `HighlightController` (cheap `renderOutline`). Concrete
+  reusable objects live in `game/objects/` — `Door` (frame-independent hinge
+  swing), `ToggleControl` → `Switch` / `Generator` (drive `Activatable` lights via
+  `Lamp`), `PickupItem` (inventory add / drop). A pure `Inventory`
+  (`systems/inventory/`) emits `inventory:changed`; `inventoryStore` mirrors it
+  for React. Interaction + inventory state persists per scene
+  (`game/persistence/sceneState` over `shared/utils/localStore`).
+  `PlayerController` is reduced to locomotion and exposes its camera; the
+  scene-level interaction system replaces the M2 player-owned probe. HUD gains a
+  centred interaction prompt, an inventory bar and a Drop action; `dropItem` is
+  added to the `ControllableScene` contract.
+- **Depends on:** M2 (player camera), M3 (the compound to populate), EventBus,
+  SceneManager.
+- **Playable:** in the compound — open / close the warehouse door, start / stop
+  the generator (its warehouse work-light), flip the entrance switch, and pick up
+  / drop loose objects; the whole interaction + inventory state survives a reload.
+- **DoD:** a common interface for every interactable; **no gameplay logic in scene
+  objects**; allocation-free probe (10 Hz throttle, reused ray, registered-mesh
+  resolve); ≤4 lights held; reuses the M3 world + M2 player unchanged; gates green
+  (40 unit tests). **No horror/AI/missions.**
+- **Size:** L.
+
+---
+
+> **Horror track — provisional numbering.** The milestones below (still labelled
+> M4–M12) predate the Director's M2–M4 reseries and are **planning placeholders**;
+> their numbers, build-order and dependency references will be reassigned when
+> reached. The shipped sequence to date is M0 → M2 (Player) → M3 (Compound) →
+> M4 (Core Gameplay Loop, above).
 
 ### M4 — Doubt + Audio & Environmental kinds
 - **Goal:** the full three-kind perception game with **psychological doubt**.

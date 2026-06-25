@@ -14,6 +14,7 @@ export type ObjectiveId = Brand<string, 'ObjectiveId'>;
 export type AnomalyId = Brand<string, 'AnomalyId'>;
 export type SaveSlotId = Brand<string, 'SaveSlotId'>;
 export type AudioTrackId = Brand<string, 'AudioTrackId'>;
+export type InteractableId = Brand<string, 'InteractableId'>;
 
 /** Cast a raw string into a branded id. Use at trust boundaries only. */
 export const asBrand = <T extends Brand<string, string>>(value: string): T => value as T;

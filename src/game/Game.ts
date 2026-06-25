@@ -4,6 +4,7 @@ import { SceneIds } from '@engine/scenes/sceneIds';
 import { gameEvents } from '@core/events/gameEvents';
 import type { Unsubscribe } from '@core/events/EventBus';
 import { GamePhase, useGameStore } from '@state/gameStore';
+import { useInventoryStore } from '@state/inventoryStore';
 import { Screen, useUiStore } from '@state/uiStore';
 import { useSettingsStore } from '@state/settingsStore';
 import { AudioChannel } from '@systems/audio/audio.types';
@@ -35,10 +36,13 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.wireSettings();
-    // Mirror the focused interaction into the UI store (engine stays UI-free).
+    // Mirror simulation facts into the UI stores (engine/systems stay UI-free).
     this.subscriptions.push(
       gameEvents.on('interaction:focus-changed', ({ prompt }) => {
         useUiStore.getState().setInteractionPrompt(prompt);
+      }),
+      gameEvents.on('inventory:changed', ({ items }) => {
+        useInventoryStore.getState().setItems(items);
       }),
     );
   }
@@ -104,6 +108,10 @@ export class Game {
     this.controllable?.interact();
   }
 
+  public dropItem(): void {
+    this.controllable?.dropItem();
+  }
+
   public pause(): void {
     this.setMoveInput(0, 0);
     this.controllable?.setSprint(false);
@@ -123,6 +131,7 @@ export class Game {
     this.controllable?.setCrouch(false);
     this.engine?.pause('manual');
     useGameStore.getState().reset();
+    useInventoryStore.getState().reset();
     useUiStore.getState().setHudVisible(false);
     useUiStore.getState().setInteractionPrompt(null);
     useUiStore.getState().setScreen(Screen.Menu);

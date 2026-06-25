@@ -39,8 +39,11 @@ Precise rules (binding, enforced in review):
   live objects (§5).
 - **R-DEP-3** `engine` (Babylon) depends on `core` + `shared`. It is **generic**:
   no concrete game content, no `@systems` imports.
-- **R-DEP-4** `systems` (audio, save, quest, anomaly) depend on `core` + `shared`.
-  Systems depend on **interfaces (ports)**, never on stores or each other's concretes.
+- **R-DEP-4** `systems` (audio, save, quest, anomaly, inventory) depend on `core` +
+  `shared`. Systems depend on **interfaces (ports)**, never on stores or each
+  other's concretes. The `engine` interaction framework defines only its own
+  `InteractionContext` (events) and never imports a system — game-layer objects
+  inject the systems they need (e.g. `PickupItem` takes an `InventoryPort`).
 - **R-DEP-5** `game` is the **concrete content + composition root**: scenes,
   content data, and `Game`. It may import `engine` + `systems` + `state`.
 - **R-DEP-6** `state`, `telegram`, `services` depend on `core`/`shared`/`app`.
@@ -61,11 +64,14 @@ src/
 │   ├── events/  EventBus<TMap>, gameEvents + GameEventMap (the contract)
 │   └── ecs/     Entity · Component · System · World · LifetimeSystem
 ├── engine/      GameEngine (render loop), scenes/ (SceneManager, BaseScene,
-│                 contracts, sceneIds), player/ (motor, look, head-bob,
-│                 interaction) ── generic Babylon
-├── systems/     audio/ save/ quest/ anomaly/  ── self-contained game systems
-├── game/        Game (composition root), scenes/ (HallwayScene), content/ (quests)
-├── state/       gameStore · uiStore · settingsStore (Zustand)
+│                 contracts, sceneIds), player/ (motor, look, head-bob),
+│                 interaction/ (registry, system, highlight, interfaces)
+│                 ── generic Babylon
+├── systems/     audio/ save/ quest/ anomaly/ inventory/  ── game systems
+├── game/        Game (composition root), scenes/ (CompoundScene + compound/
+│                 builders), objects/ (Door, Switch, Generator, Lamp, PickupItem),
+│                 persistence/ (per-scene state), content/ (quests)
+├── state/       gameStore · uiStore · settingsStore · inventoryStore (Zustand)
 ├── telegram/    TelegramService (+ typings)  ── fail-safe platform wrapper
 ├── services/    supabase/ (prepared client)
 ├── app/         config/env  ── validated environment
@@ -86,12 +92,15 @@ chunks tree-shakeable and dependencies explicit).
 | --- | --- | --- |
 | `GameEngine` | `engine/GameEngine.ts` | Owns Babylon engine + render loop; drives `World` + `SceneManager`. |
 | `SceneManager` | `engine/scenes/SceneManager.ts` | Registers scenes; transitions (full unload → load). |
-| `PlayerController` | `engine/player/` | Orchestrates the first-person player: composes `PlayerMotor` (gravity/collision/sprint/crouch), `LookController` (smoothed look), `HeadBob`, and `InteractionProbe`; keeps the player entity's transform in sync. |
+| `PlayerController` | `engine/player/` | Orchestrates the first-person player: composes `PlayerMotor` (gravity/collision/sprint/crouch), `LookController` (smoothed look), and `HeadBob`; keeps the player entity's transform in sync. **Locomotion only** — exposes its camera for the interaction system. |
+| `InteractionSystem` | `engine/interaction/` | Throttled camera-ray probe: resolves the focused `Interactable` via the registry, drives highlight + prompt events, dispatches `interact`. Generic — knows no concrete object type. |
+| `InteractionRegistry` | `engine/interaction/` | Per-scene catalogue: mesh→object (O(1) ray resolve) + id index for `Stateful` snapshot/restore. |
 | `World` / ECS | `core/ecs/` | Entity registry + system scheduler + lifecycle events. |
 | `AnomalySystem` | `systems/anomaly/` | Anomaly spawn, lifetime, report/miss scoring, Sanity sinks. |
 | `AudioManager` | `systems/audio/` | Channel mixing, mute, mobile unlock. |
 | `SaveSystem` | `systems/save/` | Versioned persistence via a `SaveRepository` port. |
 | `QuestSystem` | `systems/quest/` | Directive/objective state machine. |
+| `Inventory` | `systems/inventory/` | Pure carried-items store (capacity, uniqueness, carry order); emits `inventory:changed`. Framework-free. |
 | `Game` | `game/Game.ts` | Composition root + façade for React. |
 
 **R-SYS-1** Each system has exactly one responsibility (SRP). If you can't name it
@@ -119,13 +128,16 @@ Two communication channels exist and must not be confused:
 
 ## 6. State management (Zustand)
 
-Three stores, three responsibilities (mirrors UI/gameplay split):
+Four stores, four responsibilities (mirrors UI/gameplay split):
 
 - `gameStore` — **game progression**: phase, Sanity, score, hits/misses, scene.
   It is the **only writer** of Sanity/score; it mirrors key facts to the bus.
-- `uiStore` — **presentation**: current screen, modal, HUD visibility, toast.
-  Holds no gameplay data.
+- `uiStore` — **presentation**: current screen, modal, HUD visibility, toast,
+  the focused interaction prompt. Holds no gameplay data.
 - `settingsStore` — **preferences**: volumes, mute, haptics, debug. Survives resets.
+- `inventoryStore` — **read-only mirror** of the `Inventory` system for the HUD.
+  The simulation stays the single writer; `Game` forwards `inventory:changed`
+  here (R-ST-1), so the UI renders a projection, never gameplay state.
 
 Rules:
 - **R-ST-1** Systems read/write game state **through injected sinks**

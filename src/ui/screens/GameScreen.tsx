@@ -60,7 +60,7 @@ const useKeyboardMovement = (game: Game | null): void => {
   }, [game]);
 };
 
-/** Desktop convenience: Shift = sprint, C = crouch toggle, E/F = interact. */
+/** Desktop convenience: Shift = sprint, C = crouch, E/F = interact, Q/G = drop. */
 const useKeyboardActions = (game: Game | null): void => {
   useEffect(() => {
     if (game === null) return;
@@ -74,6 +74,7 @@ const useKeyboardActions = (game: Game | null): void => {
         crouched = !crouched;
         game.setCrouch(crouched);
       } else if (key === 'e' || key === 'f') game.interact();
+      else if (key === 'q' || key === 'g') game.dropItem();
     };
     const onKeyUp = (event: KeyboardEvent): void => {
       if (event.key.toLowerCase() === 'shift') game.setSprint(false);

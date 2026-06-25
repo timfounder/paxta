@@ -44,6 +44,12 @@ export interface GameEventMap {
   'interaction:focus-changed': { readonly prompt: string | null };
   'interaction:performed': { readonly prompt: string };
 
+  // Inventory ---------------------------------------------------------------
+  // Payload is the full contents (inline shape — core must not import systems).
+  'inventory:changed': {
+    readonly items: readonly { readonly id: string; readonly name: string }[];
+  };
+
   // Anomaly -----------------------------------------------------------------
   'anomaly:spawned': { readonly anomalyId: AnomalyId; readonly sceneId: SceneId };
   'anomaly:reported': { readonly anomalyId: AnomalyId; readonly correct: boolean };

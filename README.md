@@ -49,17 +49,21 @@ src/
 ├── engine/        Generic Babylon.js integration (no concrete game content)
 │   ├── GameEngine   Render loop owning the world + scene manager
 │   ├── scenes/      SceneManager, BaseScene lifecycle, scene contracts/ids
-│   └── player/      First-person PlayerController (camera ↔ entity bridge)
+│   ├── player/      First-person PlayerController (locomotion; exposes camera)
+│   └── interaction/ Generic interaction framework (registry, ray system, highlight)
 ├── systems/       Self-contained game systems (one responsibility each)
 │   ├── audio/       AudioManager — channel mixing, mute, mobile unlock
 │   ├── save/        SaveSystem + SaveRepository port (localStorage adapter)
 │   ├── quest/       QuestSystem — quest/objective state machine
-│   └── anomaly/     AnomalySystem — spawn, sanity drain, report/miss scoring
+│   ├── anomaly/     AnomalySystem — spawn, sanity drain, report/miss scoring
+│   └── inventory/   Inventory — pure carried-items store (capacity, carry order)
 ├── game/          Concrete game: composition root + content (uses engine+systems)
 │   ├── Game         The façade React drives; wires every system together
-│   ├── scenes/      Concrete locations (HallwayScene)
+│   ├── scenes/      Concrete locations (CompoundScene + compound/ builders)
+│   ├── objects/     Reusable interactables (Door, Switch, Generator, Lamp, PickupItem)
+│   ├── persistence/ Per-scene interaction + inventory state
 │   └── content/     Quest/objective definitions
-├── state/         Zustand stores: gameStore, uiStore, settingsStore
+├── state/         Zustand stores: gameStore, uiStore, settingsStore, inventoryStore
 ├── telegram/      Fail-safe wrapper over the Telegram Mini Apps platform
 ├── services/      External integrations (Supabase client — prepared)
 ├── app/           App-wide configuration (validated environment)

@@ -5,11 +5,12 @@ disagree, that is a bug: fix one of them in the same pull request. If two
 documents disagree, the **owner** of the disputed fact (see table) wins.
 
 > Status: shipped — M1 (shell + mobile controls), M2 (Player Core), M3 (the
-> PAXTA cotton compound — explorable world). Game design complete (see
+> PAXTA cotton compound — explorable world), M4 (Core Gameplay Loop — the
+> universal interaction + inventory foundation). Game design complete (see
 > [design/GDD](./design/GDD.md)). **Production Mode is in force** — every milestone
 > follows [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
 > Next: horror systems (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
-> Last reviewed: 2026-06-25 · Doc set version: 1.4
+> Last reviewed: 2026-06-25 · Doc set version: 1.5
 
 > **Two layers of docs.** The files in this folder are the **pillar docs**
 > (principles, standards, constraints). The detailed **game design** lives in

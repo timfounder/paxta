@@ -244,6 +244,51 @@ body {
   transform: scale(1.5);
 }
 
+.interaction-prompt {
+  position: absolute;
+  top: calc(50% + 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tg-text);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.inventory {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xs);
+  max-width: 60vw;
+  pointer-events: none;
+}
+
+.inventory__item {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--tg-text);
+  background: rgba(21, 21, 26, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
 .actions {
   position: absolute;
   right: calc(var(--space-lg) + env(safe-area-inset-right));

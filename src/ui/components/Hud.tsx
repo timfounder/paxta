@@ -3,6 +3,8 @@ import { useSettingsStore } from '@state/settingsStore';
 
 import { ActionButtons } from './ActionButtons';
 import { FpsMeter } from './FpsMeter';
+import { InteractionPrompt } from './InteractionPrompt';
+import { InventoryBar } from './InventoryBar';
 import { LookLayer } from './LookLayer';
 import { MovementJoystick } from './MovementJoystick';
 import { Reticle } from './Reticle';
@@ -23,6 +25,7 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
     <div className="hud">
       <LookLayer onLook={(dx, dy) => game?.look(dx, dy)} />
       <Reticle />
+      <InteractionPrompt />
 
       <div className="hud__top">
         {debugOverlay ? <FpsMeter game={game} /> : <span />}
@@ -31,6 +34,7 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
         </button>
       </div>
 
+      <InventoryBar />
       <MovementJoystick onChange={(x, y) => game?.setMoveInput(x, y)} />
       <ActionButtons game={game} />
     </div>
