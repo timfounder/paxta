@@ -4,12 +4,12 @@ This directory is the **single source of truth** for PAXTA. If code and docs
 disagree, that is a bug: fix one of them in the same pull request. If two
 documents disagree, the **owner** of the disputed fact (see table) wins.
 
-> Status: Foundation complete; M1 (shell + empty level + mobile controls) and
-> M2 (Player Core — first-person controller) shipped. Game design complete (see
+> Status: shipped — M1 (shell + mobile controls), M2 (Player Core), M3 (the
+> PAXTA cotton compound — explorable world). Game design complete (see
 > [design/GDD](./design/GDD.md)). **Production Mode is in force** — every milestone
 > follows [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
-> Next milestone: M3+ (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
-> Last reviewed: 2026-06-25 · Doc set version: 1.3
+> Next: horror systems (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
+> Last reviewed: 2026-06-25 · Doc set version: 1.4
 
 > **Two layers of docs.** The files in this folder are the **pillar docs**
 > (principles, standards, constraints). The detailed **game design** lives in

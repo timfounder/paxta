@@ -6,13 +6,19 @@
 
 ## 1. The setting
 
-PAXTA is experienced as a sequence of **liminal interiors**: the parts of
-ordinary buildings you pass through but never linger in — night corridors,
-stairwells, service hallways, waiting rooms — rendered slightly too long, too
-quiet, too symmetrical. The world is **mundane materials, wrong proportions**.
+PAXTA ( *paxta* — Uzbek for **cotton** ) is an isolated **cotton-plantation
+compound** worked at night: a guard house at the gate, a warehouse, a diesel
+generator, a water pump, a dirt road, and a vast **cotton field** ringed by
+trees — all under fog and a thin moon. The world is **mundane rural-industrial
+materials** (concrete, rusted metal, timber, soil) in oppressive dark.
 
-The unifying aesthetic: *a place that was designed for people, at an hour when no
-people should be there.* Fluorescent hum, fog-thick air, doors that imply rooms.
+The unifying aesthetic: *a place that was built to be worked, at an hour when no
+one should be there.* Generator hum, fog-thick air, distant tree lines, the
+white of cotton bolls catching what little light there is.
+
+> **Established in Milestone 3.** Earlier drafts framed the world as liminal
+> interior corridors; the shipped setting is the outdoor cotton compound above.
+> Interiors (the warehouse, the guard house) exist *within* it.
 
 ## 2. World rules (the "physics" of PAXTA)
 
@@ -66,14 +72,20 @@ Rules:
 
 | Location | Code | Status | Role |
 | --- | --- | --- | --- |
-| **The Hallway** | `HallwayScene` / `SceneIds.Hallway` | Built | Tutorial corridor; the reference implementation. |
-| The Stairwell | — | Planned (Ch.1) | Vertical space; tests audio anomalies. |
-| The Waiting Room | — | Planned (Ch.2) | Static seating; tests "something moved." |
-| The Records Office | — | Planned (Ch.3) | Dense props; high perception load. |
+| **The Compound** | `CompoundScene` / `SceneIds.Compound` | Built | The primary explorable site (below). |
+| ↳ Guard house | `compound/buildings` | Built | Wooden hut at the road entrance. |
+| ↳ Warehouse | `compound/buildings` | Built | Large open-fronted shell you can enter. |
+| ↳ Generator | `compound/machinery` | Built | Interactable power source (toggles its work-light). |
+| ↳ Water pump | `compound/machinery` | Built | Roadside prop. |
+| ↳ Cotton field | `compound/vegetation` | Built | Instanced rows of cotton (plants + bolls). |
+| ↳ Tree line | `compound/vegetation` | Built | Instanced perimeter/roadside trees. |
+| The Hallway | `HallwayScene` / `SceneIds.Hallway` | Retired | Early test corridor; kept, not the default level. |
 
 Every location is a `BaseScene` subclass in `src/game/scenes/` and is registered
-under a `SceneId` (`src/engine/scenes/sceneIds.ts`). The Hallway is the canonical
-template; copy its structure.
+under a `SceneId` (`src/engine/scenes/sceneIds.ts`). `CompoundScene` is the
+canonical template: a thin scene orchestrating small builder modules under
+`game/scenes/compound/` (palette · terrain · buildings · machinery · vegetation
+· lighting), with vegetation **instanced** for the mobile draw-call budget.
 
 ## 5. Anomaly placement: anchors
 

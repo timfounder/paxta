@@ -166,23 +166,26 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
-### M3 — Anomaly Presentation v1 (you can finally *see* it)
-- **Goal:** anomalies become **perceivable** — real visual manifestations with
-  subtlety tiers and report feedback. The first genuinely *playable horror loop*.
-- **Architecture:** new **AnomalyPresentation** layer — a per-kind presenter that
-  subscribes to `anomaly:spawned/resolved/missed` and renders/hides the Babylon
-  manifestation at the anomaly's transform (scoring stays in `AnomalySystem`,
-  R-ANOM-9). Visual kind + subtlety-tier data. Catch/false-alarm feedback (audio
-  cue + haptic + HUD), reusing AudioManager + TelegramService.
-- **Depends on:** M1 (anomaly lifecycle/events), M2 recommended (authored
-  sightlines), AudioManager, TelegramService.
-- **Playable:** spot real visual wrongs across tiers and report them in a Night —
-  the core fun, end to end.
-- **Flag/Release:** `features.presentation`; presenters register per kind so audio/
-  env (M4) slot in without touching the seam.
-- **DoD:** all visual tiers readable on a phone in the dark (R-ANOM-4); the
-  real/false invariant holds (scoreable iff lifetime entity — tested); gates green.
-- **Size:** XL (the central seam).
+### M3 — World & Environment: the PAXTA compound ✅
+> **Redefined from "Anomaly Presentation".** The Director scoped M3 as the game's
+> real setting — the night-time cotton compound — building the explorable world
+> on the M2 player before any horror. The milestone numbering has diverged from
+> the original plan; Anomaly Presentation and the later horror milestones (M4+
+> below) shift accordingly and will be resequenced when reached.
+- **Goal:** a believable, explorable PAXTA compound (the actual setting).
+- **Architecture:** `CompoundScene` (a `BaseScene`/`ControllableScene`) reusing
+  the M2 `PlayerController` unchanged, orchestrating small builders under
+  `game/scenes/compound/` — palette, terrain (collidable ground + road + field),
+  buildings (guard house, open warehouse), machinery (generator + pump; the
+  generator is an `Interactable`), vegetation (cotton + trees, **InstancedMesh**),
+  lighting (moon + 2 point lights). Fog; the generator work-light flickers.
+- **Depends on:** M2 (player + interaction), SceneManager, BaseScene.
+- **Playable:** walk the compound — road, guard house, enter the warehouse,
+  examine/toggle the generator, cross the cotton field, under fog and moonlight.
+- **DoD:** renders within the mobile budget (instanced vegetation ≈4 draw calls,
+  ≤4 lights, frozen statics); reuses the player verbatim; gates green.
+  **No horror/AI/missions/inventory.**
+- **Size:** L.
 
 ---
 

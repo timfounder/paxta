@@ -17,7 +17,13 @@ You are not told why your hands shake more each night. You are told to come back
 tomorrow.
 
 The horror is bureaucratic and intimate: an ordinary night job, in an
-extraordinary building, that is slowly spending you.
+extraordinary place, that is slowly spending you.
+
+> **Setting (established in Milestone 3).** That place is an isolated **cotton
+> compound** — *paxta* is Uzbek for cotton — worked after dark: a guard house,
+> a warehouse, a generator, a pump, a dirt road, and a cotton field under fog
+> and a thin moon (see WORLD §1). The "watching" happens out here, in the field
+> and its buildings. A fuller narrative pass on this setting is still owed.
 
 ## 2. Canonical terminology
 
@@ -25,7 +31,7 @@ These terms are **binding** across code, UI, and docs. Do not introduce synonyms
 
 | Term | Meaning | Player-facing? |
 | --- | --- | --- |
-| **PAXTA** | The department/program and, colloquially, the building it watches. Always all-caps. | Yes |
+| **PAXTA** | *Paxta* = Uzbek for **cotton**; the program/department and the cotton compound it watches. Always all-caps. | Yes |
 | **Custodian** | The player's role/title. | Yes |
 | **Night** | One play session = the canonical session unit (10–15 min; design/GDD §3). | Yes |
 | **Shift** | The in-fiction name for the night's duty. **One Shift = one Night.** | Yes |

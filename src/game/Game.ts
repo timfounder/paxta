@@ -58,8 +58,8 @@ export class Game {
     if (this.disposed) return;
 
     if (engine.scenes.activeScene === null) {
-      await engine.scenes.transitionTo(SceneIds.Hallway);
-      useGameStore.getState().setScene(SceneIds.Hallway);
+      await engine.scenes.transitionTo(SceneIds.Compound);
+      useGameStore.getState().setScene(SceneIds.Compound);
     }
     engine.resume('manual');
     engine.start();
@@ -153,12 +153,12 @@ export class Game {
   }
 
   private async createEngine(): Promise<GameEngine> {
-    const [{ GameEngine }, { HallwayScene }] = await Promise.all([
+    const [{ GameEngine }, { CompoundScene }] = await Promise.all([
       import('@engine/GameEngine'),
-      import('./scenes/HallwayScene'),
+      import('./scenes/CompoundScene'),
     ]);
     const engine = new GameEngine({ canvas: this.canvas, events: gameEvents });
-    engine.scenes.register(SceneIds.Hallway, (ctx) => new HallwayScene(ctx));
+    engine.scenes.register(SceneIds.Compound, (ctx) => new CompoundScene(ctx));
     this.engine = engine;
     this.log.info('Engine initialised (Babylon loaded)');
     return engine;
