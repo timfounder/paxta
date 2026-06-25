@@ -23,8 +23,34 @@ export const PLAYER = {
   /** Look sensitivity multiplier for touch / pointer input. */
   LOOK_SENSITIVITY: 0.0022,
 
-  /** Eye height of the first-person camera in world units. */
+  /** Eye height of the first-person camera in world units (standing). */
   EYE_HEIGHT: 1.7,
+
+  // -- Movement & camera feel (Player Core) --------------------------------
+  /** Sprint speed multiplier applied to MOVE_SPEED. */
+  SPRINT_MULTIPLIER: 1.8,
+  /** Crouch speed multiplier applied to MOVE_SPEED. */
+  CROUCH_SPEED_MULTIPLIER: 0.5,
+  /** Eye height while crouched, in world units. */
+  CROUCH_EYE_HEIGHT: 1.0,
+  /** Horizontal velocity smoothing rate (higher = snappier accel/stop). */
+  MOVE_SMOOTHING: 14,
+  /** Downward acceleration, world units per second squared. */
+  GRAVITY: -20,
+  /** Player collider horizontal radius, in world units. */
+  COLLIDER_RADIUS: 0.35,
+  /** Collider total height standing / crouched, in world units. */
+  STANDING_HEIGHT: 1.8,
+  CROUCH_HEIGHT: 1.2,
+  /** Look smoothing rate (higher = snappier, less latency). */
+  LOOK_SMOOTHING: 22,
+  /** Head-bob oscillation rate at base walk speed, radians per second. */
+  HEAD_BOB_FREQUENCY: 8.5,
+  /** Head-bob vertical / lateral amplitude, in world units. */
+  HEAD_BOB_AMPLITUDE: 0.05,
+  HEAD_BOB_LATERAL: 0.03,
+  /** Maximum interaction-ray reach, in world units. */
+  INTERACT_DISTANCE: 2.6,
 
   /** Sanity bounds. Sanity is the core horror resource. */
   SANITY_MIN: 0,

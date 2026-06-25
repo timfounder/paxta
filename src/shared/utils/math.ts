@@ -7,6 +7,14 @@ export const clamp = (value: number, min: number, max: number): number =>
 /** Linear interpolation between `from` and `to` by factor `t` (0..1). */
 export const lerp = (from: number, to: number, t: number): number => from + (to - from) * t;
 
+/**
+ * Frame-rate-independent exponential smoothing of `current` toward `target`.
+ * `rate` is the responsiveness (higher = snappier); at `rate→∞` it snaps. Used
+ * for camera/look smoothing and velocity easing so feel is the same at any FPS.
+ */
+export const damp = (current: number, target: number, rate: number, deltaSeconds: number): number =>
+  current + (target - current) * (1 - Math.exp(-rate * deltaSeconds));
+
 /** Map `value` from one range to another. */
 export const remap = (
   value: number,

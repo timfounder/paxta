@@ -1,17 +1,20 @@
 import type { Game } from '@game/Game';
 import { useSettingsStore } from '@state/settingsStore';
 
+import { ActionButtons } from './ActionButtons';
 import { FpsMeter } from './FpsMeter';
 import { LookLayer } from './LookLayer';
 import { MovementJoystick } from './MovementJoystick';
+import { Reticle } from './Reticle';
 
 interface HudProps {
   readonly game: Game | null;
 }
 
 /**
- * Milestone 1 HUD: just the mobile controls (look surface + movement joystick),
- * a pause button, and an optional FPS read-out. No horror UI yet.
+ * Player-core HUD: the look surface, crosshair reticle, movement joystick,
+ * action cluster (interact / crouch / sprint), a pause button, and an optional
+ * FPS read-out. No horror UI yet.
  */
 export const Hud = ({ game }: HudProps): React.JSX.Element => {
   const debugOverlay = useSettingsStore((state) => state.debugOverlay);
@@ -19,6 +22,7 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
   return (
     <div className="hud">
       <LookLayer onLook={(dx, dy) => game?.look(dx, dy)} />
+      <Reticle />
 
       <div className="hud__top">
         {debugOverlay ? <FpsMeter game={game} /> : <span />}
@@ -28,6 +32,7 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
       </div>
 
       <MovementJoystick onChange={(x, y) => game?.setMoveInput(x, y)} />
+      <ActionButtons game={game} />
     </div>
   );
 };

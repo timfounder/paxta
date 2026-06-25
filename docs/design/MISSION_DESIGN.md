@@ -13,9 +13,9 @@ done* rather than just *a clock survived*.
 
 - **R-MIS-1 One Directive per Night.** No mission stacking, no side quests. The
   Night is short; one clear purpose keeps it legible on mobile (Pillar 3).
-- **R-MIS-2 Directives are built only from the three verbs.** LOOK, ADVANCE,
-  REPORT (GDD §4). A Directive recombines and *frames* them; it never introduces a
-  fourth verb (R-MIS-5).
+- **R-MIS-2 Directives are built only from the player verbs.** LOOK, MOVE,
+  INTERACT, REPORT (GDD §4). A Directive recombines and *frames* them; it never
+  introduces a brand-new verb (R-MIS-5).
 - **R-MIS-3 The Directive never overrides survival.** Reaching dawn alive is
   always the meta-goal; the Directive layers meaning on top. Failing the Directive
   ≠ dying (FAILURE_CONDITIONS R-FAIL-4) unless explicitly a "critical" objective.
@@ -36,9 +36,10 @@ A Directive has **1–3 objectives**, shown terse (STORY R-NAR-2) and advanced b
 - **R-MIS-4 Objectives describe perception, not chores.** "Confirm the waiting
   room is correct," not "press 5 buttons." If an objective can't be expressed via
   watch-and-report, it doesn't belong (Pillar 2).
-- **R-MIS-5 No new-verb objectives in v1.** An objective that needs pick-up,
-  placement, or a tool is **redesigned into observation**, or deferred to
-  FUTURE_EXPANSION. Guard the mechanic whitelist (GDD §4).
+- **R-MIS-5 No brand-new-verb objectives.** Objectives use the established player
+  verbs (look / move / interact / report). One that needs a *new* verb (pick-up,
+  placement, a tool) is **redesigned**, or deferred to FUTURE_EXPANSION. Guard the
+  mechanic whitelist (GDD §4).
 
 ## 3. Directive archetypes (the templates)
 

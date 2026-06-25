@@ -61,7 +61,8 @@ src/
 │   ├── events/  EventBus<TMap>, gameEvents + GameEventMap (the contract)
 │   └── ecs/     Entity · Component · System · World · LifetimeSystem
 ├── engine/      GameEngine (render loop), scenes/ (SceneManager, BaseScene,
-│                 contracts, sceneIds), player/ (PlayerController) ── generic Babylon
+│                 contracts, sceneIds), player/ (motor, look, head-bob,
+│                 interaction) ── generic Babylon
 ├── systems/     audio/ save/ quest/ anomaly/  ── self-contained game systems
 ├── game/        Game (composition root), scenes/ (HallwayScene), content/ (quests)
 ├── state/       gameStore · uiStore · settingsStore (Zustand)
@@ -85,7 +86,7 @@ chunks tree-shakeable and dependencies explicit).
 | --- | --- | --- |
 | `GameEngine` | `engine/GameEngine.ts` | Owns Babylon engine + render loop; drives `World` + `SceneManager`. |
 | `SceneManager` | `engine/scenes/SceneManager.ts` | Registers scenes; transitions (full unload → load). |
-| `PlayerController` | `engine/player/` | Bridges camera input ↔ player entity; emits movement. |
+| `PlayerController` | `engine/player/` | Orchestrates the first-person player: composes `PlayerMotor` (gravity/collision/sprint/crouch), `LookController` (smoothed look), `HeadBob`, and `InteractionProbe`; keeps the player entity's transform in sync. |
 | `World` / ECS | `core/ecs/` | Entity registry + system scheduler + lifecycle events. |
 | `AnomalySystem` | `systems/anomaly/` | Anomaly spawn, lifetime, report/miss scoring, Sanity sinks. |
 | `AudioManager` | `systems/audio/` | Channel mixing, mute, mobile unlock. |

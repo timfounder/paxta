@@ -60,6 +60,35 @@ const useKeyboardMovement = (game: Game | null): void => {
   }, [game]);
 };
 
+/** Desktop convenience: Shift = sprint, C = crouch toggle, E/F = interact. */
+const useKeyboardActions = (game: Game | null): void => {
+  useEffect(() => {
+    if (game === null) return;
+    let crouched = false;
+
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.repeat) return;
+      const key = event.key.toLowerCase();
+      if (key === 'shift') game.setSprint(true);
+      else if (key === 'c') {
+        crouched = !crouched;
+        game.setCrouch(crouched);
+      } else if (key === 'e' || key === 'f') game.interact();
+    };
+    const onKeyUp = (event: KeyboardEvent): void => {
+      if (event.key.toLowerCase() === 'shift') game.setSprint(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      game.setSprint(false);
+    };
+  }, [game]);
+};
+
 const PausePanel = ({ game }: GameScreenProps): React.JSX.Element => (
   <div className="screen" style={{ background: 'rgba(0,0,0,0.82)' }}>
     <h2 className="title" style={{ fontSize: '1.8rem', letterSpacing: '0.3em' }}>
@@ -80,6 +109,7 @@ const PausePanel = ({ game }: GameScreenProps): React.JSX.Element => (
 export const GameScreen = ({ game }: GameScreenProps): React.JSX.Element => {
   const phase = useGameStore((state) => state.phase);
   useKeyboardMovement(game);
+  useKeyboardActions(game);
 
   return (
     <>

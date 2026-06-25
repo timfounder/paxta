@@ -1,5 +1,5 @@
 import type { GameEngine } from '@engine/GameEngine';
-import { isControllableScene } from '@engine/scenes/contracts';
+import { isControllableScene, type ControllableScene } from '@engine/scenes/contracts';
 import { SceneIds } from '@engine/scenes/sceneIds';
 import { gameEvents } from '@core/events/gameEvents';
 import type { Unsubscribe } from '@core/events/EventBus';
@@ -12,10 +12,11 @@ import { PLAYER } from '@shared/constants/game';
 import { logger } from '@shared/utils/logger';
 
 /**
- * The composition root and façade React talks to. For Milestone 1 it boots the
- * shell, lazily loads the Babylon engine on first entry, drives the empty
- * playable level, and forwards mobile movement/look input to the active scene.
- * Horror systems exist in the codebase but are intentionally not wired here yet.
+ * The composition root and façade React talks to. It boots the shell, lazily
+ * loads the Babylon engine on first entry, drives the playable level, and
+ * forwards the mobile player controls (move / look / sprint / crouch / interact)
+ * to the active scene. Horror systems exist in the codebase but are intentionally
+ * not wired here yet.
  *
  * The engine (and its large bundle) is created lazily on the first
  * {@link enterLevel} call, so the menu and loading screens ship without the
@@ -34,6 +35,12 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.wireSettings();
+    // Mirror the focused interaction into the UI store (engine stays UI-free).
+    this.subscriptions.push(
+      gameEvents.on('interaction:focus-changed', ({ prompt }) => {
+        useUiStore.getState().setInteractionPrompt(prompt);
+      }),
+    );
   }
 
   // -- Commands --------------------------------------------------------------
@@ -56,30 +63,50 @@ export class Game {
     }
     engine.resume('manual');
     engine.start();
+    this.controllable?.setHeadBobEnabled(useSettingsStore.getState().headBob);
 
     useUiStore.getState().setScreen(Screen.Game);
     useUiStore.getState().setHudVisible(true);
   }
 
+  /** The active scene if it accepts player control, else null. */
+  private get controllable(): ControllableScene | null {
+    const scene = this.engine?.scenes.activeScene;
+    return scene && isControllableScene(scene) ? scene : null;
+  }
+
   /** Forward normalised movement intent (x = strafe, z = forward) to the scene. */
   public setMoveInput(x: number, z: number): void {
-    const scene = this.engine?.scenes.activeScene;
-    if (scene && isControllableScene(scene)) scene.setMoveInput(x, z);
+    this.controllable?.setMoveInput(x, z);
   }
 
   /** Forward a raw pointer look delta (pixels); applies sensitivity + inversion. */
   public look(deltaXPixels: number, deltaYPixels: number): void {
-    const scene = this.engine?.scenes.activeScene;
-    if (!scene || !isControllableScene(scene)) return;
+    const scene = this.controllable;
+    if (!scene) return;
     const settings = useSettingsStore.getState();
     const sensitivity = PLAYER.LOOK_SENSITIVITY * settings.lookSensitivity;
-    const yaw = deltaXPixels * sensitivity;
-    const pitch = deltaYPixels * sensitivity * (settings.invertLook ? -1 : 1);
-    scene.look(yaw, pitch);
+    scene.look(
+      deltaXPixels * sensitivity,
+      deltaYPixels * sensitivity * (settings.invertLook ? -1 : 1),
+    );
+  }
+
+  public setSprint(active: boolean): void {
+    this.controllable?.setSprint(active);
+  }
+
+  public setCrouch(active: boolean): void {
+    this.controllable?.setCrouch(active);
+  }
+
+  public interact(): void {
+    this.controllable?.interact();
   }
 
   public pause(): void {
     this.setMoveInput(0, 0);
+    this.controllable?.setSprint(false);
     this.engine?.pause('manual');
     useGameStore.getState().setPhase(GamePhase.Paused);
   }
@@ -92,9 +119,12 @@ export class Game {
   /** Leave the level back to the menu, freezing the engine. */
   public exitToMenu(): void {
     this.setMoveInput(0, 0);
+    this.controllable?.setSprint(false);
+    this.controllable?.setCrouch(false);
     this.engine?.pause('manual');
     useGameStore.getState().reset();
     useUiStore.getState().setHudVisible(false);
+    useUiStore.getState().setInteractionPrompt(null);
     useUiStore.getState().setScreen(Screen.Menu);
   }
 
@@ -143,6 +173,7 @@ export class Game {
       this.audio.setChannelVolume(AudioChannel.Music, state.volumes[AudioChannel.Music]);
       this.audio.setChannelVolume(AudioChannel.Sfx, state.volumes[AudioChannel.Sfx]);
       this.audio.setChannelVolume(AudioChannel.Ambience, state.volumes[AudioChannel.Ambience]);
+      this.controllable?.setHeadBobEnabled(state.headBob);
     };
     apply(useSettingsStore.getState());
     this.subscriptions.push(useSettingsStore.subscribe(apply));

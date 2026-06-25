@@ -145,20 +145,24 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
-### M2 — Node Patrol (mobile control model)
-- **Goal:** movement becomes **tap-to-advance between authored vantage nodes**
-  with free look — the GDD mobile control scheme.
-- **Architecture:** new **PatrolSystem** (refactors `PlayerController` to drive the
-  camera between authored `Vec3` nodes; free look retained); scenes author a node
-  graph (extends the anchor concept); HUD node prompt; update WORLD scale rules.
-- **Depends on:** GameEngine, SceneManager, M0 player. *(Loosely coupled to M3 —
-  parallelizable; see §6.)*
-- **Playable:** patrol the Hallway one-thumb by tapping nodes, looking freely;
-  the Night still runs.
-- **Flag/Release:** `features.patrol` — off = legacy free-walk (keeps M1 playable).
-- **DoD:** one-thumb portrait play; nodes cover all anchors' sightlines
-  (walk-test); no per-frame allocation added (R-PERF-7); gates green.
-- **Size:** M.
+### M2 — Player Core (first-person controller) ✅
+> **Redefined from "Node Patrol".** The Director scoped M2 as a production-grade
+> free-movement first-person controller — the foundation all future systems build
+> on — superseding the node-patrol control model (reconciled in CORE_LOOP / GDD §4).
+- **Goal:** a responsive, natural mobile first-person controller.
+- **Architecture:** decomposed `engine/player/` — `PlayerMotor` (gravity +
+  collision via an invisible ellipsoid collider + `moveWithCollisions`, sprint,
+  crouch), `LookController` (smoothed yaw/pitch), `HeadBob` (pure), and
+  `interaction/` (`Interactable` interface + `InteractionProbe` forward ray),
+  orchestrated by a thin `PlayerController`. Extends the `ControllableScene`
+  contract (sprint/crouch/interact); adds interaction events + `uiStore` focus;
+  HUD gains a reticle + sprint/crouch/interact buttons; `damp` smoothing util.
+- **Depends on:** M1 (controller, joystick/look UI, scene contract), GameEngine.
+- **Playable:** walk the Hallway with gravity, wall collision, sprint, crouch,
+  head-bob and a smoothed camera; examine a demo prop via the interaction ray.
+- **DoD:** one-thumb portrait; allocation-free hot path (R-PERF-7); pure logic
+  unit-tested; gates green. **No horror/AI/missions/inventory.**
+- **Size:** L.
 
 ---
 

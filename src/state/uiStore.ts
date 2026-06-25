@@ -24,6 +24,8 @@ interface UiState {
   readonly modal: Modal | null;
   readonly hudVisible: boolean;
   readonly toast: string | null;
+  /** Prompt for the interactable currently under the crosshair, or null. */
+  readonly interactionPrompt: string | null;
 
   setScreen: (screen: Screen) => void;
   openModal: (modal: Modal) => void;
@@ -31,6 +33,7 @@ interface UiState {
   setHudVisible: (visible: boolean) => void;
   showToast: (message: string) => void;
   clearToast: () => void;
+  setInteractionPrompt: (prompt: string | null) => void;
 }
 
 /**
@@ -43,6 +46,7 @@ export const useUiStore = create<UiState>((set) => ({
   modal: null,
   hudVisible: false,
   toast: null,
+  interactionPrompt: null,
 
   setScreen: (screen) => set({ screen }),
   openModal: (modal) => set({ modal }),
@@ -50,4 +54,5 @@ export const useUiStore = create<UiState>((set) => ({
   setHudVisible: (hudVisible) => set({ hudVisible }),
   showToast: (toast) => set({ toast }),
   clearToast: () => set({ toast: null }),
+  setInteractionPrompt: (interactionPrompt) => set({ interactionPrompt }),
 }));

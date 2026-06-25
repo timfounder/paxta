@@ -12,6 +12,8 @@ interface SettingsState {
   readonly lookSensitivity: number;
   /** Invert the vertical look axis. */
   readonly invertLook: boolean;
+  /** Walking head-bob (off for players prone to motion sickness). */
+  readonly headBob: boolean;
 
   setVolume: (channel: AudioChannel, value: number) => void;
   toggleMuted: () => void;
@@ -19,6 +21,7 @@ interface SettingsState {
   setDebugOverlay: (enabled: boolean) => void;
   setLookSensitivity: (value: number) => void;
   setInvertLook: (enabled: boolean) => void;
+  setHeadBob: (enabled: boolean) => void;
 }
 
 /** Bounds for the look-sensitivity multiplier. */
@@ -44,6 +47,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   debugOverlay: appConfig.debug,
   lookSensitivity: 1,
   invertLook: false,
+  headBob: true,
 
   setVolume: (channel, value) =>
     set((state) => ({
@@ -57,4 +61,5 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       lookSensitivity: Math.min(LOOK_SENSITIVITY_MAX, Math.max(LOOK_SENSITIVITY_MIN, value)),
     }),
   setInvertLook: (invertLook) => set({ invertLook }),
+  setHeadBob: (headBob) => set({ headBob }),
 }));

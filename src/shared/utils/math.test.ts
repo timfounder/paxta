@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { chance, clamp, lerp, pickRandom, remap } from './math';
+import { chance, clamp, damp, lerp, pickRandom, remap } from './math';
 
 describe('clamp', () => {
   it('returns the value when within range', () => {
@@ -45,5 +45,24 @@ describe('chance', () => {
   it('is deterministic at the boundaries', () => {
     expect(chance(0)).toBe(false);
     expect(chance(1)).toBe(true);
+  });
+});
+
+describe('damp', () => {
+  it('moves toward the target without overshooting', () => {
+    const next = damp(0, 10, 5, 0.1);
+    expect(next).toBeGreaterThan(0);
+    expect(next).toBeLessThan(10);
+  });
+
+  it('stays put when already at the target', () => {
+    expect(damp(7, 7, 20, 0.016)).toBeCloseTo(7, 10);
+  });
+
+  it('is frame-rate independent (one big step ≈ two half steps)', () => {
+    const oneStep = damp(0, 1, 12, 0.1);
+    const half = damp(0, 1, 12, 0.05);
+    const twoSteps = damp(half, 1, 12, 0.05);
+    expect(twoSteps).toBeCloseTo(oneStep, 6);
   });
 });

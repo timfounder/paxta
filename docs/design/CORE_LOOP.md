@@ -17,9 +17,8 @@ SCAN ──▶ DOUBT ──▶ DECIDE ──▶ ACT ──▶ FEEL
 This 5–20 second cycle repeats continuously. It is the entire game in miniature
 and it must be satisfying on its own (Pillar 2).
 
-**Meso (≈2 min) — the patrol round:** ADVANCE through a short loop of vantage
-**nodes**, scanning each, reporting what is wrong, returning. One round ≈ one
-in-game hour (NIGHT_PROGRESSION).
+**Meso (≈2 min) — the patrol round:** walk the corridor, scanning, reporting
+what is wrong, returning. One round ≈ one in-game hour (NIGHT_PROGRESSION).
 
 **Macro (10–15 min) — the Night:** rounds escalate hour by hour until dawn or
 collapse (GDD §3).
@@ -29,33 +28,38 @@ present — the threat of one is enough. Empty, correct corridors are content.
 
 ## 2. Mobile control scheme (portrait, one thumb)
 
-PAXTA uses **three verbs** (GDD §4), chosen so the whole game is one-thumb in
-portrait, in the dark, possibly muted.
+> **Revised in Milestone 2 (Player Core).** The earlier node-based patrol was
+> replaced by a full first-person controller — free virtual-joystick movement
+> with gravity, collision, sprint, crouch, smoothed look, head-bob and an
+> interaction ray. This is the foundation all later systems build on. The table
+> below is what ships; it supersedes the node-patrol design (GDD §4).
+
+All controls are one-thumb in portrait, in the dark, possibly muted.
 
 | Verb | Input | Notes |
 | --- | --- | --- |
-| **LOOK** | Drag anywhere on the screen | Free 360° look. Sensitivity slider in Settings. The primary act. |
-| **ADVANCE** | Tap the glowing **vantage node** ahead | Node-based patrol on authored rails — no virtual joystick. |
-| **REPORT** | Tap the bottom-centre REPORT button | The single committal action. |
+| **LOOK** | Drag the look surface | Free 360°, smoothed. Sensitivity + invert in Settings. |
+| **MOVE** | Left virtual **joystick** | Free walk under gravity + wall collision. |
+| **SPRINT** | Hold the Sprint button (desktop: Shift) | Faster locomotion. |
+| **CROUCH** | Toggle the Crouch button (desktop: C) | Lower stance, slower, shorter collider. |
+| **INTERACT** | Contextual Interact button (desktop: E) | Appears when the centre reticle is on an Interactable. |
+| **REPORT** | *(horror milestone)* | The anomaly-report action; not wired yet. |
 
 Design decisions and rules:
-- **R-LOOP-2 Node-based movement, not a joystick.** Movement is restricted to
-  authored vantage nodes connected along the patrol route. This keeps sightlines
-  composed (anomalies stay readable on a 6-inch screen — WORLD R-ANO-3), keeps
-  pacing authored (each node is a beat), and makes one-thumb play comfortable.
-  *(This refines the earlier free-walk controller for mobile; implementation
-  updates `PlayerController` to drive between nodes. Flagged in FUTURE_EXPANSION.)*
-- **R-LOOP-3 Look is always free, always available.** Even while "moving" between
-  nodes the player can look. Dread lives in where you choose to look.
-- **R-LOOP-4 One committal action.** REPORT is the only thing that changes the
-  world state. No "interact/use/pick-up" verb in v1 (GDD §4); a mission that
-  seems to need one is redesigned or deferred (MISSION_DESIGN R-MIS-5).
-- **R-LOOP-5 Light is atmosphere, not a mechanic.** The Custodian's view is lit
-  by the world (and a fixed, always-on view light). **No flashlight battery to
-  manage** — that is an unnecessary mechanic (GDD §4).
-- **R-LOOP-6 Handedness & comfort.** Controls mirror for left/right hand; the
-  REPORT button and nodes sit in the lower thumb-arc; respect safe areas
-  (UI_GUIDELINES R-INT-5).
+- **R-LOOP-2 Free first-person movement.** A left virtual joystick drives
+  gravity-and-collision movement; sprint and crouch are thumb buttons. The
+  controller is decomposed into a motor (physics), look, head-bob and an
+  interaction probe (TECH_ARCHITECTURE). Movement is allocation-free for 60 FPS.
+- **R-LOOP-3 Look is always free, always available.** The look surface spans the
+  screen beneath the controls; dread lives in where you choose to look.
+- **R-LOOP-4 Interaction is a first-class verb.** A forward ray from the centre
+  reticle resolves the focused {@link Interactable}; the contextual Interact
+  button triggers it. (Horror's committal REPORT action arrives later.)
+- **R-LOOP-5 Light is atmosphere, not a mechanic.** The view is lit by the world;
+  **no flashlight battery to manage** — that remains an unnecessary mechanic.
+- **R-LOOP-6 Handedness & comfort.** Joystick (lower-left) and actions
+  (lower-right) sit in the thumb-arc; respect safe areas (UI_GUIDELINES R-INT-5).
+  Head-bob has a Settings toggle (motion-sickness accessibility).
 
 ## 3. The in-Night HUD
 
@@ -135,7 +139,7 @@ from false; a frayed one cannot.* The player's own fear becomes the difficulty.
 ## 6. The loop's promise (acceptance criteria)
 
 A correct implementation of this loop means:
-1. A new player understands LOOK / ADVANCE / REPORT within the first round, with
+1. A new player understands LOOK / MOVE / INTERACT within the first round, with
    no tutorial text wall (NIGHT_PROGRESSION §2).
 2. The micro loop is tense with no anomaly present (R-LOOP-1).
 3. A careful player survives a full Night; a careless one dies around hours 4–5

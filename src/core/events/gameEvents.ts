@@ -40,6 +40,10 @@ export interface GameEventMap {
   'quest:completed': { readonly questId: QuestId };
   'quest:failed': { readonly questId: QuestId };
 
+  // Interaction -------------------------------------------------------------
+  'interaction:focus-changed': { readonly prompt: string | null };
+  'interaction:performed': { readonly prompt: string };
+
   // Anomaly -----------------------------------------------------------------
   'anomaly:spawned': { readonly anomalyId: AnomalyId; readonly sceneId: SceneId };
   'anomaly:reported': { readonly anomalyId: AnomalyId; readonly correct: boolean };

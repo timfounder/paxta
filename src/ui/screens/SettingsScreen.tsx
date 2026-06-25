@@ -20,11 +20,13 @@ export const SettingsScreen = (): React.JSX.Element => {
   const haptics = useSettingsStore((state) => state.hapticsEnabled);
   const lookSensitivity = useSettingsStore((state) => state.lookSensitivity);
   const invertLook = useSettingsStore((state) => state.invertLook);
+  const headBob = useSettingsStore((state) => state.headBob);
   const setVolume = useSettingsStore((state) => state.setVolume);
   const toggleMuted = useSettingsStore((state) => state.toggleMuted);
   const setHaptics = useSettingsStore((state) => state.setHaptics);
   const setLookSensitivity = useSettingsStore((state) => state.setLookSensitivity);
   const setInvertLook = useSettingsStore((state) => state.setInvertLook);
+  const setHeadBob = useSettingsStore((state) => state.setHeadBob);
 
   const onVolumeChange =
     (channel: AudioChannel) =>
@@ -64,6 +66,19 @@ export const SettingsScreen = (): React.JSX.Element => {
               type="checkbox"
               checked={invertLook}
               onChange={(event) => setInvertLook(event.target.checked)}
+            />
+          </div>
+        </div>
+
+        <div className="field">
+          <div className="field__row">
+            <label htmlFor="head-bob">Head bob</label>
+            <input
+              id="head-bob"
+              className="switch"
+              type="checkbox"
+              checked={headBob}
+              onChange={(event) => setHeadBob(event.target.checked)}
             />
           </div>
         </div>

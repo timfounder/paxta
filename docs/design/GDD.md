@@ -72,23 +72,33 @@ The Night is the unit of: structure (NIGHT_PROGRESSION), difficulty
 
 PAXTA is deliberately tiny. The complete verb and system set is:
 
-**Verbs (3):**
-1. **LOOK** — drag to look freely (360°). The primary act of horror.
-2. **ADVANCE** — tap the next authored vantage **node** to walk the patrol. No
-   joystick; movement is on authored rails so sightlines stay readable on a phone.
-3. **REPORT** — one button: "an anomaly is present, here, now."
+> **Revised in Milestone 2 (Player Core).** PAXTA ships a full first-person
+> controller — free virtual-joystick movement with gravity/collision, sprint,
+> crouch, smoothed look, head-bob, and a generic interaction ray — as the rock-
+> solid foundation all later systems build on. This supersedes the earlier
+> node-based-patrol / no-interact framing.
+
+**Verbs:**
+1. **LOOK** — drag to look freely (360°, smoothed). The primary act of horror.
+2. **MOVE** — left virtual joystick; free first-person walk under gravity and
+   wall collision, with **SPRINT** (hold) and **CROUCH** (toggle).
+3. **INTERACT** — a forward ray from the centre reticle finds an `Interactable`;
+   one contextual button triggers it. A generic foundation (doors, objects), not
+   itself a horror verb.
+4. **REPORT** — the horror committal action ("an anomaly is present, here, now");
+   added with the anomaly milestone.
 
 **Systems (4):**
 - **Sanity** — the single resource and failure axis (CORE_LOOP §4).
 - **The Night clock** — the spine; advances tension (NIGHT_PROGRESSION).
-- **Directives** — one mission per Night, built only from the three verbs
+- **Directives** — one mission per Night, built from the player verbs
   (MISSION_DESIGN).
 - **Case Files** — a passive collectible/knowledge log (REWARD_SYSTEM).
 
 **Explicitly NOT in the game** (each would be an "unnecessary mechanic"):
-combat, inventory, crafting, stamina, a flashlight battery to manage, hunger,
-manual save slots, skill trees, currency earned through grind. Adding any of
-these requires a Director sign-off and a pillar justification.
+combat, inventory, crafting, a stamina bar, a flashlight battery to manage,
+hunger, manual save slots, skill trees, currency earned through grind. Adding any
+of these requires a Director sign-off and a pillar justification.
 
 ## 5. Target tuning (the Night-model economy)
 

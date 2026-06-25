@@ -42,8 +42,12 @@ All authored to match the engine and player controller. **These are binding.**
 | Convention | Value | Source |
 | --- | --- | --- |
 | Unit | 1 world unit = **1 metre** | Engine convention |
-| Camera eye height | **1.7** units | `PLAYER.EYE_HEIGHT` |
+| Camera eye height | **1.7** units (crouched **1.0**) | `PLAYER.EYE_HEIGHT` / `CROUCH_EYE_HEIGHT` |
 | Walk speed | **3.2** units/s | `PLAYER.MOVE_SPEED` |
+| Sprint / crouch speed | ×**1.8** / ×**0.5** | `PLAYER.SPRINT_MULTIPLIER` / `CROUCH_SPEED_MULTIPLIER` |
+| Player collider | radius **0.35**, height **1.8** (crouch **1.2**) | `PLAYER.COLLIDER_RADIUS` / `STANDING_HEIGHT` |
+| Gravity | **−20** units/s² | `PLAYER.GRAVITY` |
+| Interaction reach | **2.6** units | `PLAYER.INTERACT_DISTANCE` |
 | Ground plane | y = 0 | `HallwayScene` |
 | Corridor width (reference) | ~6 units | `HallwayScene` floor width |
 | Ceiling height (reference) | ~3 units | `HallwayScene` ceiling |

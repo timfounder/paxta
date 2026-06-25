@@ -9,7 +9,8 @@ import {
   Vector3,
 } from '@babylonjs/core';
 
-import { PlayerController, type MovementBounds } from '@engine/player/PlayerController';
+import { PlayerController } from '@engine/player/PlayerController';
+import { attachInteractable } from '@engine/player/interaction/Interactable';
 import { BaseScene } from '@engine/scenes/BaseScene';
 import type { ControllableScene } from '@engine/scenes/contracts';
 import { SceneIds } from '@engine/scenes/sceneIds';
@@ -18,15 +19,12 @@ import type { Vec3 } from '@shared/types/spatial';
 
 const SPAWN: Vec3 = { x: 0, y: 0, z: -6 };
 
-/** Walkable area, inset from the corridor's inner wall faces by the player width. */
-const BOUNDS: MovementBounds = { minX: -2.4, maxX: 2.4, minZ: -7.4, maxZ: 17.4 };
-
 /**
- * The opening location as an **empty, explorable level** (Milestone 1): a long,
- * dim corridor you can walk and look around with mobile controls. It owns the
- * {@link PlayerController} and exposes the {@link ControllableScene} contract so
- * the UI can drive movement and look. Horror systems are intentionally not wired
- * yet — this scene only builds the space and the player.
+ * The opening location as an **empty, explorable level**: a long, dim corridor
+ * you can walk (with gravity + collision), sprint and crouch through. It owns
+ * the {@link PlayerController} and implements the {@link ControllableScene}
+ * contract so the UI can drive the player. A single inert prop demonstrates the
+ * interaction ray. No horror systems are wired here yet.
  */
 export class HallwayScene extends BaseScene implements ControllableScene {
   public readonly id: SceneId = SceneIds.Hallway;
@@ -36,6 +34,7 @@ export class HallwayScene extends BaseScene implements ControllableScene {
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
     scene.clearColor = new Color4(0.02, 0.02, 0.03, 1);
+    scene.collisionsEnabled = true;
 
     // Dim, foggy atmosphere — moody but navigable (no horror mechanics yet).
     scene.fogMode = Scene.FOGMODE_EXP2;
@@ -44,14 +43,9 @@ export class HallwayScene extends BaseScene implements ControllableScene {
 
     this.buildEnvironment(scene);
     this.buildLighting(scene);
+    this.buildInteractableProp(scene);
 
-    this.player = new PlayerController(
-      scene,
-      this.context.world,
-      this.context.events,
-      SPAWN,
-      BOUNDS,
-    );
+    this.player = new PlayerController(scene, this.context.world, this.context.events, SPAWN);
 
     return Promise.resolve();
   }
@@ -73,6 +67,22 @@ export class HallwayScene extends BaseScene implements ControllableScene {
     this.player?.look(yaw, pitch);
   }
 
+  public setSprint(active: boolean): void {
+    this.player?.setSprint(active);
+  }
+
+  public setCrouch(active: boolean): void {
+    this.player?.setCrouch(active);
+  }
+
+  public setHeadBobEnabled(enabled: boolean): void {
+    this.player?.setHeadBobEnabled(enabled);
+  }
+
+  public interact(): void {
+    this.player?.interact();
+  }
+
   private buildEnvironment(scene: Scene): void {
     const floorMaterial = new StandardMaterial('floor-mat', scene);
     floorMaterial.diffuseColor = new Color3(0.08, 0.08, 0.09);
@@ -81,6 +91,7 @@ export class HallwayScene extends BaseScene implements ControllableScene {
     const ground = MeshBuilder.CreateGround('floor', { width: 6, height: 26 }, scene);
     ground.position = new Vector3(0, 0, 5);
     ground.material = floorMaterial;
+    ground.checkCollisions = true;
 
     const wallMaterial = new StandardMaterial('wall-mat', scene);
     wallMaterial.diffuseColor = new Color3(0.05, 0.05, 0.06);
@@ -89,6 +100,7 @@ export class HallwayScene extends BaseScene implements ControllableScene {
       const wall = MeshBuilder.CreateBox(name, { width: 0.4, height: 3, depth: 26 }, scene);
       wall.position = new Vector3(x, 1.5, 5);
       wall.material = wallMaterial;
+      wall.checkCollisions = true;
     };
     makeWall('wall-left', -3);
     makeWall('wall-right', 3);
@@ -97,6 +109,7 @@ export class HallwayScene extends BaseScene implements ControllableScene {
       const wall = MeshBuilder.CreateBox(name, { width: 6, height: 3, depth: 0.4 }, scene);
       wall.position = new Vector3(0, 1.5, z);
       wall.material = wallMaterial;
+      wall.checkCollisions = true;
     };
     endWall('wall-back', -8);
     endWall('wall-front', 18);
@@ -104,6 +117,29 @@ export class HallwayScene extends BaseScene implements ControllableScene {
     const ceiling = MeshBuilder.CreateBox('ceiling', { width: 6, height: 0.2, depth: 26 }, scene);
     ceiling.position = new Vector3(0, 3, 5);
     ceiling.material = wallMaterial;
+    ceiling.checkCollisions = true;
+  }
+
+  /** A single inert prop that proves out the interaction ray + interface. */
+  private buildInteractableProp(scene: Scene): void {
+    const material = new StandardMaterial('prop-mat', scene);
+    material.diffuseColor = new Color3(0.32, 0.26, 0.2);
+    material.specularColor = new Color3(0.05, 0.05, 0.05);
+
+    const prop = MeshBuilder.CreateBox('examine-prop', { size: 0.6 }, scene);
+    prop.position = new Vector3(1.6, 0.3, 4);
+    prop.material = material;
+    prop.checkCollisions = true;
+
+    let lit = false;
+    attachInteractable(prop, {
+      prompt: 'Examine',
+      canInteract: () => true,
+      interact: () => {
+        lit = !lit;
+        material.emissiveColor = lit ? new Color3(0.45, 0.12, 0.12) : new Color3(0, 0, 0);
+      },
+    });
   }
 
   private buildLighting(scene: Scene): void {

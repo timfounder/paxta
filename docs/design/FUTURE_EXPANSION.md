@@ -67,10 +67,9 @@ must clear §6 guardrails.
 Mechanics intentionally **out** of v1 (GDD §4), parked here so future need is a
 *decision*, not an accident:
 
-- **An "interact/use" verb** (pick up / place / operate). The single most likely
-  fourth verb. Deferred because the three-verb purity is a feature. Revisit only
-  if a Directive archetype genuinely cannot be expressed by watch-and-report
-  (MISSION_DESIGN R-MIS-5) — and even then, prefer redesign.
+- **A generic INTERACT verb** *(now shipped in Milestone 2)* — a forward-ray
+  `Interactable` foundation for doors/objects. Specific *uses* (pick-up, placement,
+  carrying) remain deferred; prefer redesign into watch-and-interact.
 - **Resource management** (light/battery, stamina). Cut as unnecessary (GDD §4).
   Only reconsider if a *whole chapter's identity* depends on it (e.g. a deeper
   Blackout), and never as busywork.

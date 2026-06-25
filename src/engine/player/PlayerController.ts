@@ -7,44 +7,38 @@ import type { EventBus } from '@core/events/EventBus';
 import type { GameEventMap } from '@core/events/gameEvents';
 import { PLAYER } from '@shared/constants/game';
 import type { Vec3 } from '@shared/types/spatial';
-import { clamp } from '@shared/utils/math';
 
-/** Vertical look clamp (~83°), so the view never flips past straight up/down. */
-const PITCH_LIMIT = 1.45;
-
-/** Axis-aligned walkable region (already inset for the player's width). */
-export interface MovementBounds {
-  readonly minX: number;
-  readonly maxX: number;
-  readonly minZ: number;
-  readonly maxZ: number;
-}
+import { HeadBob } from './HeadBob';
+import { LookController } from './LookController';
+import { PlayerMotor } from './PlayerMotor';
+import { InteractionProbe } from './interaction/InteractionProbe';
 
 /**
- * First-person exploration controller for the (empty) playable level. Movement
- * and look are driven entirely by the mobile control layer — there is no
- * Babylon built-in input — so the same code path serves touch and pointer.
- *
- * Movement is integrated manually and clamped to the level's axis-aligned
- * {@link MovementBounds} (cheap and exact for a corridor); nothing is allocated
- * in the per-frame hot path, protecting the 60 FPS budget.
+ * First-person player core. A thin orchestrator that composes the camera with
+ * four single-responsibility units — {@link PlayerMotor} (gravity/collision/
+ * sprint/crouch), {@link LookController} (smoothed look), {@link HeadBob}, and
+ * {@link InteractionProbe} — and keeps the player {@link Entity}'s transform in
+ * sync. Input arrives from the mobile control layer via the scene contract.
  */
 export class PlayerController {
   private readonly camera: FreeCamera;
+  private readonly motor: PlayerMotor;
+  private readonly lookController: LookController;
+  private readonly headBob: HeadBob;
+  private readonly probe: InteractionProbe;
   private readonly entity: Entity;
   private readonly transform: TransformComponent;
 
-  private yaw = 0;
-  private pitch = 0;
-  private inputX = 0;
-  private inputZ = 0;
+  private moveX = 0;
+  private moveZ = 0;
+  private sprint = false;
+  private headBobEnabled = true;
 
   constructor(
     scene: Scene,
     private readonly world: World,
     private readonly events: EventBus<GameEventMap>,
     spawn: Vec3,
-    private readonly bounds: MovementBounds,
   ) {
     const eye = new Vector3(spawn.x, spawn.y + PLAYER.EYE_HEIGHT, spawn.z);
     this.camera = new FreeCamera('player-camera', eye, scene);
@@ -54,6 +48,11 @@ export class PlayerController {
     this.camera.rotation.set(0, 0, 0);
     scene.activeCamera = this.camera;
 
+    this.motor = new PlayerMotor(scene, spawn);
+    this.lookController = new LookController(this.camera);
+    this.headBob = new HeadBob();
+    this.probe = new InteractionProbe(scene, this.camera, this.events);
+
     this.transform = new TransformComponent(spawn);
     this.entity = new Entity('player').add(this.transform).add(new TagComponent(['player']));
     this.world.addEntity(this.entity);
@@ -61,44 +60,58 @@ export class PlayerController {
     this.events.emit('player:spawned', { entityId: this.entity.id, position: spawn });
   }
 
-  /** Set the normalised movement intent: `x` = strafe, `z` = forward (−1..1). */
   public setMoveInput(x: number, z: number): void {
-    this.inputX = clamp(x, -1, 1);
-    this.inputZ = clamp(z, -1, 1);
+    this.moveX = x;
+    this.moveZ = z;
   }
 
-  /** Apply a look delta, in radians, around the yaw (horizontal) and pitch axes. */
-  public look(yaw: number, pitch: number): void {
-    this.yaw += yaw;
-    this.pitch = clamp(this.pitch + pitch, -PITCH_LIMIT, PITCH_LIMIT);
-    this.camera.rotation.y = this.yaw;
-    this.camera.rotation.x = this.pitch;
+  public look(yawDelta: number, pitchDelta: number): void {
+    this.lookController.addLook(yawDelta, pitchDelta);
+  }
+
+  public setSprint(active: boolean): void {
+    this.sprint = active;
+  }
+
+  public setCrouch(active: boolean): void {
+    this.motor.setCrouch(active);
+  }
+
+  public setHeadBobEnabled(enabled: boolean): void {
+    this.headBobEnabled = enabled;
+  }
+
+  public interact(): void {
+    this.probe.interact();
   }
 
   public update(deltaSeconds: number): void {
-    if (this.inputX === 0 && this.inputZ === 0) return;
+    this.lookController.update(deltaSeconds);
+    const yaw = this.lookController.yawAngle;
 
-    const sin = Math.sin(this.yaw);
-    const cos = Math.cos(this.yaw);
-    // Forward = (sin, 0, cos); Right = (cos, 0, −sin) for a yaw rotation about +Y.
-    let vx = cos * this.inputX + sin * this.inputZ;
-    let vz = -sin * this.inputX + cos * this.inputZ;
-    const length = Math.hypot(vx, vz);
-    if (length > 1) {
-      vx /= length;
-      vz /= length;
-    }
+    this.motor.update(deltaSeconds, this.moveX, this.moveZ, yaw, this.sprint);
+    this.headBob.update(deltaSeconds, this.motor.speed, this.motor.isGrounded, this.headBobEnabled);
 
-    const step = PLAYER.MOVE_SPEED * deltaSeconds;
-    const position = this.camera.position;
-    position.x = clamp(position.x + vx * step, this.bounds.minX, this.bounds.maxX);
-    position.z = clamp(position.z + vz * step, this.bounds.minZ, this.bounds.maxZ);
+    // Place the camera at the eye, with crouch offset and head-bob applied.
+    const centre = this.motor.position;
+    const feetY = centre.y - this.motor.halfHeightValue;
+    const eyeY = feetY + this.motor.currentEyeHeight + this.headBob.verticalOffset;
+    const lateral = this.headBob.lateralOffset;
+    this.camera.position.set(
+      centre.x + Math.cos(yaw) * lateral,
+      eyeY,
+      centre.z - Math.sin(yaw) * lateral,
+    );
 
-    this.transform.setPosition({ x: position.x, y: position.y - PLAYER.EYE_HEIGHT, z: position.z });
-    this.transform.rotationY = this.yaw;
+    this.probe.update(deltaSeconds);
+
+    this.transform.setPosition({ x: centre.x, y: feetY, z: centre.z });
+    this.transform.rotationY = yaw;
   }
 
   public dispose(): void {
+    this.probe.dispose();
+    this.motor.dispose();
     this.camera.dispose();
     this.world.removeEntity(this.entity.id);
   }
