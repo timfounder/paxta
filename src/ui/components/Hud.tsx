@@ -1,30 +1,33 @@
 import type { Game } from '@game/Game';
-import { useGameStore } from '@state/gameStore';
+import { useSettingsStore } from '@state/settingsStore';
 
-import { SanityBar } from './SanityBar';
+import { FpsMeter } from './FpsMeter';
+import { LookLayer } from './LookLayer';
+import { MovementJoystick } from './MovementJoystick';
 
 interface HudProps {
   readonly game: Game | null;
 }
 
-/** In-game heads-up display: sanity, score and the primary action controls. */
+/**
+ * Milestone 1 HUD: just the mobile controls (look surface + movement joystick),
+ * a pause button, and an optional FPS read-out. No horror UI yet.
+ */
 export const Hud = ({ game }: HudProps): React.JSX.Element => {
-  const score = useGameStore((state) => state.score);
+  const debugOverlay = useSettingsStore((state) => state.debugOverlay);
 
   return (
     <div className="hud">
+      <LookLayer onLook={(dx, dy) => game?.look(dx, dy)} />
+
       <div className="hud__top">
-        <SanityBar />
-        <span className="score">{score.toString().padStart(5, '0')}</span>
+        {debugOverlay ? <FpsMeter game={game} /> : <span />}
         <button type="button" className="icon-btn" aria-label="Pause" onClick={() => game?.pause()}>
           ❚❚
         </button>
       </div>
-      <div className="hud__bottom">
-        <button type="button" className="report-btn" onClick={() => game?.reportAnomaly()}>
-          REPORT
-        </button>
-      </div>
+
+      <MovementJoystick onChange={(x, y) => game?.setMoveInput(x, y)} />
     </div>
   );
 };

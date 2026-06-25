@@ -1,82 +1,104 @@
-import { UniversalCamera, Vector3, type Scene } from '@babylonjs/core';
+import { FreeCamera, Vector3, type Scene } from '@babylonjs/core';
 
-import { Entity } from '@core/ecs/Entity';
 import { TagComponent, TransformComponent } from '@core/ecs/Component';
+import { Entity } from '@core/ecs/Entity';
 import type { World } from '@core/ecs/World';
 import type { EventBus } from '@core/events/EventBus';
 import type { GameEventMap } from '@core/events/gameEvents';
 import { PLAYER } from '@shared/constants/game';
 import type { Vec3 } from '@shared/types/spatial';
+import { clamp } from '@shared/utils/math';
 
-/** Below this squared horizontal delta a frame counts as "not moved". */
-const MOVE_EPSILON = 0.0001;
+/** Vertical look clamp (~83°), so the view never flips past straight up/down. */
+const PITCH_LIMIT = 1.45;
 
-/** Maps the design move-speed (world units/s) onto Babylon's camera speed unit. */
-const CAMERA_SPEED_FACTOR = 0.05;
+/** Axis-aligned walkable region (already inset for the player's width). */
+export interface MovementBounds {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+}
 
 /**
- * First-person player. It bridges Babylon input (the {@link UniversalCamera})
- * with the engine-agnostic world by keeping a player {@link Entity}'s
- * {@link TransformComponent} in sync and broadcasting movement on the bus.
+ * First-person exploration controller for the (empty) playable level. Movement
+ * and look are driven entirely by the mobile control layer — there is no
+ * Babylon built-in input — so the same code path serves touch and pointer.
  *
- * Rendering input lives in Babylon; gameplay reacts only to emitted events,
- * so non-rendering systems never import the camera.
+ * Movement is integrated manually and clamped to the level's axis-aligned
+ * {@link MovementBounds} (cheap and exact for a corridor); nothing is allocated
+ * in the per-frame hot path, protecting the 60 FPS budget.
  */
 export class PlayerController {
-  private readonly camera: UniversalCamera;
+  private readonly camera: FreeCamera;
   private readonly entity: Entity;
   private readonly transform: TransformComponent;
-  private lastEmitted: Vec3;
+
+  private yaw = 0;
+  private pitch = 0;
+  private inputX = 0;
+  private inputZ = 0;
 
   constructor(
     scene: Scene,
     private readonly world: World,
     private readonly events: EventBus<GameEventMap>,
     spawn: Vec3,
+    private readonly bounds: MovementBounds,
   ) {
-    const eyePosition = new Vector3(spawn.x, spawn.y + PLAYER.EYE_HEIGHT, spawn.z);
-    this.camera = new UniversalCamera('player-camera', eyePosition, scene);
-    this.camera.speed = PLAYER.MOVE_SPEED * CAMERA_SPEED_FACTOR;
-    this.camera.angularSensibility = 1 / PLAYER.LOOK_SENSITIVITY;
+    const eye = new Vector3(spawn.x, spawn.y + PLAYER.EYE_HEIGHT, spawn.z);
+    this.camera = new FreeCamera('player-camera', eye, scene);
     this.camera.minZ = 0.1;
-    this.camera.inertia = 0.6;
-    this.camera.keysUp = [87, 38]; // W, ArrowUp
-    this.camera.keysDown = [83, 40]; // S, ArrowDown
-    this.camera.keysLeft = [65, 37]; // A, ArrowLeft
-    this.camera.keysRight = [68, 39]; // D, ArrowRight
-    this.camera.attachControl(true);
+    this.camera.maxZ = 60;
+    this.camera.fov = 0.95;
+    this.camera.rotation.set(0, 0, 0);
     scene.activeCamera = this.camera;
 
     this.transform = new TransformComponent(spawn);
     this.entity = new Entity('player').add(this.transform).add(new TagComponent(['player']));
     this.world.addEntity(this.entity);
-    this.lastEmitted = spawn;
 
     this.events.emit('player:spawned', { entityId: this.entity.id, position: spawn });
   }
 
-  public get entityId(): Entity['id'] {
-    return this.entity.id;
+  /** Set the normalised movement intent: `x` = strafe, `z` = forward (−1..1). */
+  public setMoveInput(x: number, z: number): void {
+    this.inputX = clamp(x, -1, 1);
+    this.inputZ = clamp(z, -1, 1);
   }
 
-  public update(_deltaSeconds: number): void {
-    const { x, y, z } = this.camera.position;
-    this.transform.setPosition({ x, y: y - PLAYER.EYE_HEIGHT, z });
-    this.transform.rotationY = this.camera.rotation.y;
+  /** Apply a look delta, in radians, around the yaw (horizontal) and pitch axes. */
+  public look(yaw: number, pitch: number): void {
+    this.yaw += yaw;
+    this.pitch = clamp(this.pitch + pitch, -PITCH_LIMIT, PITCH_LIMIT);
+    this.camera.rotation.y = this.yaw;
+    this.camera.rotation.x = this.pitch;
+  }
 
-    const moved =
-      Math.abs(x - this.lastEmitted.x) > MOVE_EPSILON ||
-      Math.abs(z - this.lastEmitted.z) > MOVE_EPSILON;
+  public update(deltaSeconds: number): void {
+    if (this.inputX === 0 && this.inputZ === 0) return;
 
-    if (moved) {
-      const position = this.transform.toVec3();
-      this.lastEmitted = { x, y, z };
-      this.events.emit('player:moved', { entityId: this.entity.id, position });
+    const sin = Math.sin(this.yaw);
+    const cos = Math.cos(this.yaw);
+    // Forward = (sin, 0, cos); Right = (cos, 0, −sin) for a yaw rotation about +Y.
+    let vx = cos * this.inputX + sin * this.inputZ;
+    let vz = -sin * this.inputX + cos * this.inputZ;
+    const length = Math.hypot(vx, vz);
+    if (length > 1) {
+      vx /= length;
+      vz /= length;
     }
+
+    const step = PLAYER.MOVE_SPEED * deltaSeconds;
+    const position = this.camera.position;
+    position.x = clamp(position.x + vx * step, this.bounds.minX, this.bounds.maxX);
+    position.z = clamp(position.z + vz * step, this.bounds.minZ, this.bounds.maxZ);
+
+    this.transform.setPosition({ x: position.x, y: position.y - PLAYER.EYE_HEIGHT, z: position.z });
+    this.transform.rotationY = this.yaw;
   }
 
   public dispose(): void {
-    this.camera.detachControl();
     this.camera.dispose();
     this.world.removeEntity(this.entity.id);
   }

@@ -13,14 +13,18 @@ const VOLUME_CHANNELS: ReadonlyArray<{ channel: AudioChannel; label: string }> =
   { channel: AudioChannel.Ambience, label: 'Ambience' },
 ];
 
-/** Audio, haptics and accessibility preferences. */
+/** Audio, controls, haptics and accessibility preferences. */
 export const SettingsScreen = (): React.JSX.Element => {
   const volumes = useSettingsStore((state) => state.volumes);
   const muted = useSettingsStore((state) => state.muted);
   const haptics = useSettingsStore((state) => state.hapticsEnabled);
+  const lookSensitivity = useSettingsStore((state) => state.lookSensitivity);
+  const invertLook = useSettingsStore((state) => state.invertLook);
   const setVolume = useSettingsStore((state) => state.setVolume);
   const toggleMuted = useSettingsStore((state) => state.toggleMuted);
   const setHaptics = useSettingsStore((state) => state.setHaptics);
+  const setLookSensitivity = useSettingsStore((state) => state.setLookSensitivity);
+  const setInvertLook = useSettingsStore((state) => state.setInvertLook);
 
   const onVolumeChange =
     (channel: AudioChannel) =>
@@ -35,6 +39,35 @@ export const SettingsScreen = (): React.JSX.Element => {
       </h2>
 
       <div className="settings">
+        <div className="field">
+          <div className="field__row">
+            <label htmlFor="look-sensitivity">Look sensitivity</label>
+            <span>{Math.round(lookSensitivity * 100)}%</span>
+          </div>
+          <input
+            id="look-sensitivity"
+            type="range"
+            min={25}
+            max={300}
+            step={5}
+            value={Math.round(lookSensitivity * 100)}
+            onChange={(event) => setLookSensitivity(Number(event.target.value) / 100)}
+          />
+        </div>
+
+        <div className="field">
+          <div className="field__row">
+            <label htmlFor="invert-look">Invert look</label>
+            <input
+              id="invert-look"
+              className="switch"
+              type="checkbox"
+              checked={invertLook}
+              onChange={(event) => setInvertLook(event.target.checked)}
+            />
+          </div>
+        </div>
+
         {VOLUME_CHANNELS.map(({ channel, label }) => (
           <div className="field" key={channel}>
             <div className="field__row">

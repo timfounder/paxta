@@ -20,7 +20,7 @@ export const MenuScreen = ({ game }: MenuScreenProps): React.JSX.Element => {
       <p className="subtitle">{greeting}</p>
 
       <div className="stack">
-        <Button block disabled={game === null} onClick={() => void game?.newGame()}>
+        <Button block disabled={game === null} onClick={() => void game?.enterLevel()}>
           Enter
         </Button>
         <Button

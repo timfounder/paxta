@@ -84,6 +84,8 @@ export class TelegramService {
     }
 
     this.webApp.onEvent('themeChanged', this.handleThemeChanged);
+    this.webApp.onEvent('viewportChanged', this.handleViewportChanged);
+    this.applyViewportToCss();
     this.log.info(`Initialised on ${this.webApp.platform} (v${this.webApp.version})`);
   }
 
@@ -125,6 +127,20 @@ export class TelegramService {
   private readonly handleThemeChanged = (): void => {
     this.applyThemeToCss();
   };
+
+  private readonly handleViewportChanged = (): void => {
+    this.applyViewportToCss();
+  };
+
+  /** Expose the stable viewport height as `--tg-viewport-height` for layout. */
+  private applyViewportToCss(): void {
+    if (typeof document === 'undefined') return;
+    const height =
+      this.webApp?.viewportStableHeight ?? (typeof window === 'undefined' ? 0 : window.innerHeight);
+    if (height > 0) {
+      document.documentElement.style.setProperty('--tg-viewport-height', `${height}px`);
+    }
+  }
 
   /** Project Telegram theme params onto CSS custom properties on `:root`. */
   private applyThemeToCss(): void {

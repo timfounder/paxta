@@ -32,6 +32,17 @@ export const App = (): React.JSX.Element => {
     }
   }, [game]);
 
+  // Map the native Telegram back button to the current screen's "back" action.
+  useEffect(() => {
+    if (screen === Screen.Game) {
+      return telegram.showBackButton(() => game?.pause());
+    }
+    if (screen === Screen.Settings || screen === Screen.GameOver) {
+      return telegram.showBackButton(() => useUiStore.getState().setScreen(Screen.Menu));
+    }
+    return undefined;
+  }, [screen, game]);
+
   return (
     <div className="app">
       <canvas ref={canvasRef} className="game-canvas" />

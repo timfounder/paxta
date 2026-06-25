@@ -9,82 +9,68 @@ import {
   Vector3,
 } from '@babylonjs/core';
 
-import { PlayerController } from '@engine/player/PlayerController';
-import { BaseScene, type SceneContext } from '@engine/scenes/BaseScene';
+import { PlayerController, type MovementBounds } from '@engine/player/PlayerController';
+import { BaseScene } from '@engine/scenes/BaseScene';
+import type { ControllableScene } from '@engine/scenes/contracts';
 import { SceneIds } from '@engine/scenes/sceneIds';
 import type { SceneId } from '@shared/types/branded';
 import type { Vec3 } from '@shared/types/spatial';
-import { AnomalySystem } from '@systems/anomaly/AnomalySystem';
 
-import type { GameServices } from '../GameServices';
+const SPAWN: Vec3 = { x: 0, y: 0, z: -6 };
 
-const SPAWN: Vec3 = { x: 0, y: 0, z: -8 };
-
-/** Positions along the corridor where anomalies may manifest. */
-const ANCHORS: readonly Vec3[] = [
-  { x: -2.2, y: 1.4, z: 2 },
-  { x: 2.2, y: 1.4, z: 5 },
-  { x: 0, y: 2.4, z: 9 },
-  { x: -1.8, y: 0.6, z: -2 },
-];
+/** Walkable area, inset from the corridor's inner wall faces by the player width. */
+const BOUNDS: MovementBounds = { minX: -2.4, maxX: 2.4, minZ: -7.4, maxZ: 17.4 };
 
 /**
- * The opening location: a long, dim corridor. It owns the player and the
- * anomaly loop for its lifetime, building them in {@link onLoad} and tearing
- * them down in {@link onUnload} so nothing leaks across scene transitions.
+ * The opening location as an **empty, explorable level** (Milestone 1): a long,
+ * dim corridor you can walk and look around with mobile controls. It owns the
+ * {@link PlayerController} and exposes the {@link ControllableScene} contract so
+ * the UI can drive movement and look. Horror systems are intentionally not wired
+ * yet — this scene only builds the space and the player.
  */
-export class HallwayScene extends BaseScene {
+export class HallwayScene extends BaseScene implements ControllableScene {
   public readonly id: SceneId = SceneIds.Hallway;
 
   private player: PlayerController | null = null;
-  private anomalies: AnomalySystem | null = null;
-
-  constructor(
-    context: SceneContext,
-    private readonly services: GameServices,
-  ) {
-    super(context);
-  }
 
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
     scene.clearColor = new Color4(0.02, 0.02, 0.03, 1);
 
-    // Oppressive, foggy darkness — the core of the horror atmosphere.
+    // Dim, foggy atmosphere — moody but navigable (no horror mechanics yet).
     scene.fogMode = Scene.FOGMODE_EXP2;
     scene.fogColor = new Color3(0.02, 0.02, 0.03);
-    scene.fogDensity = 0.08;
+    scene.fogDensity = 0.05;
 
     this.buildEnvironment(scene);
     this.buildLighting(scene);
 
-    this.player = new PlayerController(scene, this.context.world, this.context.events, SPAWN);
-    this.anomalies = new AnomalySystem({
-      world: this.context.world,
-      events: this.context.events,
-      vitals: this.services.vitals,
-      score: this.services.score,
-    });
-    this.anomalies.start({ sceneId: this.id, anchors: ANCHORS });
+    this.player = new PlayerController(
+      scene,
+      this.context.world,
+      this.context.events,
+      SPAWN,
+      BOUNDS,
+    );
 
     return Promise.resolve();
   }
 
   protected override onUpdate(deltaSeconds: number): void {
     this.player?.update(deltaSeconds);
-    this.anomalies?.update(deltaSeconds);
   }
 
   protected override onUnload(): void {
-    this.anomalies?.stop();
     this.player?.dispose();
-    this.anomalies = null;
     this.player = null;
   }
 
-  /** Report an anomaly the player believes is present. */
-  public report(): void {
-    this.anomalies?.report();
+  public setMoveInput(x: number, z: number): void {
+    this.player?.setMoveInput(x, z);
+  }
+
+  public look(yaw: number, pitch: number): void {
+    this.player?.look(yaw, pitch);
   }
 
   private buildEnvironment(scene: Scene): void {
@@ -93,6 +79,7 @@ export class HallwayScene extends BaseScene {
     floorMaterial.specularColor = new Color3(0.02, 0.02, 0.02);
 
     const ground = MeshBuilder.CreateGround('floor', { width: 6, height: 26 }, scene);
+    ground.position = new Vector3(0, 0, 5);
     ground.material = floorMaterial;
 
     const wallMaterial = new StandardMaterial('wall-mat', scene);
@@ -106,6 +93,14 @@ export class HallwayScene extends BaseScene {
     makeWall('wall-left', -3);
     makeWall('wall-right', 3);
 
+    const endWall = (name: string, z: number): void => {
+      const wall = MeshBuilder.CreateBox(name, { width: 6, height: 3, depth: 0.4 }, scene);
+      wall.position = new Vector3(0, 1.5, z);
+      wall.material = wallMaterial;
+    };
+    endWall('wall-back', -8);
+    endWall('wall-front', 18);
+
     const ceiling = MeshBuilder.CreateBox('ceiling', { width: 6, height: 0.2, depth: 26 }, scene);
     ceiling.position = new Vector3(0, 3, 5);
     ceiling.material = wallMaterial;
@@ -113,12 +108,18 @@ export class HallwayScene extends BaseScene {
 
   private buildLighting(scene: Scene): void {
     const ambient = new HemisphericLight('ambient', new Vector3(0, 1, 0), scene);
-    ambient.intensity = 0.12;
+    ambient.intensity = 0.22;
     ambient.diffuse = new Color3(0.4, 0.45, 0.6);
+    ambient.groundColor = new Color3(0.05, 0.05, 0.07);
 
-    const lamp = new PointLight('corridor-lamp', new Vector3(0, 2.6, 6), scene);
-    lamp.intensity = 0.5;
-    lamp.range = 12;
-    lamp.diffuse = new Color3(0.9, 0.7, 0.5);
+    // Two warm pools of light along the corridor so the space reads end to end.
+    const makeLamp = (name: string, z: number): void => {
+      const lamp = new PointLight(name, new Vector3(0, 2.6, z), scene);
+      lamp.intensity = 0.55;
+      lamp.range = 14;
+      lamp.diffuse = new Color3(0.9, 0.7, 0.5);
+    };
+    makeLamp('corridor-lamp-near', 2);
+    makeLamp('corridor-lamp-far', 13);
   }
 }

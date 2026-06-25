@@ -170,10 +170,56 @@ body {
 }
 
 .hud__top {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
+}
+
+/* -- Mobile controls ------------------------------------------------------ */
+
+.look-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick {
+  position: absolute;
+  left: calc(var(--space-lg) + env(safe-area-inset-left));
+  bottom: calc(var(--space-xl) + env(safe-area-inset-bottom));
+  z-index: 2;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick__thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  will-change: transform;
+}
+
+.fps {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  color: var(--safe);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .hud__bottom {

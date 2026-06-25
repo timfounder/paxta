@@ -31,6 +31,7 @@ export class GameEngine {
 
   private running = false;
   private paused = false;
+  private hidden = false;
 
   constructor(options: GameEngineOptions) {
     this.events = options.events;
@@ -62,9 +63,15 @@ export class GameEngine {
   public start(): void {
     if (this.running) return;
     this.running = true;
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
     this.engine.runRenderLoop(this.tick);
     this.events.emit('engine:started', { timestamp: performance.now() });
     this.log.info('Render loop started');
+  }
+
+  /** Current measured frames per second (for the debug overlay). */
+  public getFps(): number {
+    return this.engine.getFps();
   }
 
   public pause(reason: 'visibility' | 'manual' = 'manual'): void {
@@ -85,6 +92,7 @@ export class GameEngine {
 
   public dispose(): void {
     this.running = false;
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     this.engine.stopRenderLoop(this.tick);
     this.sceneManager.dispose();
     this.world.clear();
@@ -93,9 +101,18 @@ export class GameEngine {
     this.log.info('Engine disposed');
   }
 
+  /**
+   * Auto-pause rendering while the tab/app is backgrounded. Independent of the
+   * manual {@link pause} flag so returning to a manually-paused game stays paused
+   * and never wastes battery on hidden frames (PERFORMANCE R-PERF-8).
+   */
+  private readonly handleVisibilityChange = (): void => {
+    this.hidden = document.hidden;
+  };
+
   /** Bound so it can be passed directly to `runRenderLoop`/`stopRenderLoop`. */
   private readonly tick = (): void => {
-    if (this.paused) return;
+    if (this.paused || this.hidden) return;
     const deltaSeconds = clamp(this.engine.getDeltaTime() / 1000, 0, GAME.MAX_FRAME_DELTA);
 
     this.world.update(deltaSeconds);
