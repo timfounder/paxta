@@ -4,10 +4,12 @@ This directory is the **single source of truth** for PAXTA. If code and docs
 disagree, that is a bug: fix one of them in the same pull request. If two
 documents disagree, the **owner** of the disputed fact (see table) wins.
 
-> Status: Foundation complete (engine, systems skeletons, tooling). Game design
-> complete (see [design/GDD](./design/GDD.md)).
-> Next milestone: gameplay systems (see [ROADMAP](./ROADMAP.md)).
-> Last reviewed: 2026-06-25 · Doc set version: 1.1
+> Status: Foundation complete; Milestone 1 (shell + empty playable level + mobile
+> controls) shipped. Game design complete (see [design/GDD](./design/GDD.md)).
+> **Production Mode is in force** — every milestone follows
+> [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
+> Next milestone: M2+ (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
+> Last reviewed: 2026-06-25 · Doc set version: 1.2
 
 > **Two layers of docs.** The files in this folder are the **pillar docs**
 > (principles, standards, constraints). The detailed **game design** lives in
@@ -30,6 +32,9 @@ New contributors read in this order:
 8. [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) — the engineering
    milestone plan (M0–M12), system dependency graph, and continuous-release
    strategy. Each milestone is independently playable.
+8b. [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md) — the mandatory per-milestone
+   engineering process (plan → implement → review/refactor/optimize → gates →
+   docs → report). Read before building any milestone.
 9. [design/GDD](./design/GDD.md) — the full Game Design Document suite (the
    designed game in detail: loop, Night, difficulty, missions, anomalies,
    pacing, rewards, save, failure, replay, progression, expansion).
@@ -51,6 +56,7 @@ a number that another document owns.
 | Budgets, frame timing, profiling | [PERFORMANCE](./PERFORMANCE.md) |
 | Product phases, exit metrics, phase DoD | [ROADMAP](./ROADMAP.md) |
 | Engineering milestones, system dependency graph, release strategy | [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md) |
+| The per-milestone production workflow (plan → build → verify → report) | [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md) |
 | TS/lint/test conventions, naming, commits | [CODING_STANDARDS](./CODING_STANDARDS.md) |
 | **Session model (the Night), detailed design, target tuning** | [design/GDD](./design/GDD.md) + suite |
 
