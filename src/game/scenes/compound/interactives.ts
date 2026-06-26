@@ -97,6 +97,13 @@ export const buildInteractives = (scene: Scene, palette: CompoundPalette): Compo
       name: 'Metal Tag',
       label: 'Pick Up Tag',
     },
+    {
+      // The "missing" fuel can — tucked in the warehouse interior to be found.
+      mesh: prop(scene, 'pickup-fuel', propMaterial, new Vector3(-23, 0.2, 10)),
+      id: 'fuel-can',
+      name: 'Fuel Can',
+      label: 'Pick Up Fuel Can',
+    },
   ];
 
   return { door: { hinge, leaf }, switchMesh, generatorLight, exteriorLight, pickups };

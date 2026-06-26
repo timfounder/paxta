@@ -8,6 +8,47 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
+## [Unreleased]
+
+Milestone 9 — **First Playable Night**: the first complete, finishable night,
+composed entirely from the existing systems (no new core systems). The player
+works a first shift at the cotton compound — power up, check the pump, lock the
+warehouse, find the fuel can, return to the guard house — across a handful of
+subtle anomalies, then the night ends on a summary screen. Atmosphere only; no
+monster, no chase, no jump scare.
+
+### Added
+
+- **Night One content** (`game/content/nightOne.ts`, data only):
+  - Five **subtle environmental anomalies** — a brief light flicker, the wind
+    dropping to nothing, the pump handle shifting position, a distant metallic
+    sound and a thickening fog — each disabled by default and rotated in by the
+    night's phases (`light` / `wind` / `moveObject` / `playSound` / `atmosphere`
+    effects on the M6 engine).
+  - A six-phase **`NightDefinition`** (Preparation → Calm → Suspicion → Escalation
+    → Peak → Resolution) that raises tension and swaps the active anomaly subset,
+    with diegetic supervisor lines at the start, midpoint and dawn.
+  - A **`MissionDefinition`** (`First Shift`) whose five objectives form one
+    sequence — `activate` the generator, `inspect` the water pump, `activate`
+    (lock) the warehouse, `collect` the fuel can, `reach` the guard house —
+    reusing existing interaction / inventory / position signals (no new logic).
+- **Scenario glue** (minimal, reuses existing patterns): an `Examinable`
+  interactable for the pump; a `Door` `initiallyOpen` flag (the warehouse starts
+  open, the generator starts off, so both objectives are real tasks); a third
+  `fuel-can` pickup.
+- **Night ending + metrics**: the shift mission's completion drives the ending —
+  the scene sums per-night metrics (completion time, objectives completed,
+  anomaly activations, interaction count) and emits a typed `night:completed`
+  event; `Game` freezes the run and shows a **Night Complete** screen
+  (`nightSummaryStore` → `NightCompleteScreen`) with the summary and a choice of
+  another night or the menu.
+
+### Changed
+
+- The compound scene now loads Night One (anomalies + night + shift mission) in
+  place of the framework demo content; the demo `anomalies` / `nights` /
+  `missions` content modules were removed.
+
 ## [0.8.0-alpha] — 2026-06-26
 
 Milestone 8 — **Mission Framework**: a production, data-driven mission framework

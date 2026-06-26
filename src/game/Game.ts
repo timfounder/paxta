@@ -10,6 +10,7 @@ import { useSettingsStore } from '@state/settingsStore';
 import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
 import { useNightDebugStore } from '@state/nightDebugStore';
 import { useMissionStore } from '@state/missionStore';
+import { useNightSummaryStore, type NightSummary } from '@state/nightSummaryStore';
 import { isAnomalyDebuggable, type AnomalyDebuggable } from './anomaly/anomalyDebug';
 import { isNightDebuggable, type NightDebuggable } from './night/nightDebug';
 import {
@@ -43,6 +44,7 @@ export class Game {
   private engine: GameEngine | null = null;
   private enginePromise: Promise<GameEngine> | null = null;
   private disposed = false;
+  private nightFinished = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -55,6 +57,7 @@ export class Game {
       gameEvents.on('inventory:changed', ({ items }) => {
         useInventoryStore.getState().setItems(items);
       }),
+      gameEvents.on('night:completed', (metrics) => this.handleNightComplete(metrics)),
     );
   }
 
@@ -65,6 +68,7 @@ export class Game {
     this.audio.unlock();
     useGameStore.getState().reset();
     useGameStore.getState().setPhase(GamePhase.Playing);
+    useNightSummaryStore.getState().reset();
 
     const firstLoad = this.engine === null;
     if (firstLoad) useUiStore.getState().setScreen(Screen.Loading);
@@ -72,9 +76,11 @@ export class Game {
     const engine = await this.ensureEngine();
     if (this.disposed) return;
 
-    if (engine.scenes.activeScene === null) {
+    // A completed night reloads a fresh scene so the next shift starts clean.
+    if (engine.scenes.activeScene === null || this.nightFinished) {
       await engine.scenes.transitionTo(SceneIds.Compound);
       useGameStore.getState().setScene(SceneIds.Compound);
+      this.nightFinished = false;
     }
     engine.resume('manual');
     engine.start();
@@ -193,6 +199,20 @@ export class Game {
     useGameStore.getState().setPhase(GamePhase.Playing);
   }
 
+  /** The shift mission completed: freeze the run and show the Night Complete screen. */
+  private handleNightComplete(metrics: NightSummary): void {
+    this.nightFinished = true;
+    this.setMoveInput(0, 0);
+    this.controllable?.setSprint(false);
+    this.engine?.pause('manual');
+    useGameStore.getState().setPhase(GamePhase.Paused);
+    useNightSummaryStore.getState().setSummary(metrics);
+    useUiStore.getState().setHudVisible(false);
+    useUiStore.getState().setInteractionPrompt(null);
+    useUiStore.getState().setScreen(Screen.NightComplete);
+    this.log.info('Night complete');
+  }
+
   /** Leave the level back to the menu, freezing the engine. */
   public exitToMenu(): void {
     this.setMoveInput(0, 0);
@@ -204,6 +224,7 @@ export class Game {
     useAnomalyDebugStore.getState().reset();
     useNightDebugStore.getState().reset();
     useMissionStore.getState().reset();
+    useNightSummaryStore.getState().reset();
     useUiStore.getState().setHudVisible(false);
     useUiStore.getState().setInteractionPrompt(null);
     useUiStore.getState().setScreen(Screen.Menu);

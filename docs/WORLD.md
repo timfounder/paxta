@@ -78,8 +78,8 @@ Rules:
 | ↳ Warehouse door | `objects/Door` | Built | Hinged, openable/closable; blocks the doorway when closed. |
 | ↳ Generator | `objects/Generator` | Built | Power source: starts/stops the warehouse work-light. |
 | ↳ Entrance switch | `objects/Switch` | Built | Guard-house wall switch; toggles the entrance flood-light. |
-| ↳ Loose pickups | `objects/PickupItem` | Built | Small props (Rusted Key, Metal Tag) you can pick up / drop. |
-| ↳ Water pump | `compound/machinery` | Built | Roadside prop. |
+| ↳ Loose pickups | `objects/PickupItem` | Built | Small props (Rusted Key, Metal Tag, Fuel Can) you can pick up / drop. |
+| ↳ Water pump | `compound/machinery` + `objects/Examinable` | Built | Roadside prop; checkable (a no-op "inspect" interactable for the shift). |
 | ↳ Cotton field | `compound/vegetation` | Built | Instanced rows of cotton (plants + bolls). |
 | ↳ Tree line | `compound/vegetation` | Built | Instanced perimeter/roadside trees. |
 
@@ -119,12 +119,13 @@ code.
 
 Anomalies are now produced by the **data-driven anomaly engine** (`AnomalyManager`,
 TECH_ARCHITECTURE): each anomaly is a definition (trigger · schedule · conditions ·
-effects) in `game/content/anomalies.ts`, with positions carried as condition/effect
-params (`position`, `proximity`, `spawnObject.at`) rather than a separate anchor
-list. The compound wires the engine but ships its examples **disabled** — the
-framework is in place; authored horror content arrives with the horror track
-(IMPLEMENTATION_ROADMAP). The legacy spawn/score `AnomalySystem` (anchors) remains
-as M0 scaffold, unwired.
+effects), with positions carried as condition/effect params (`position`,
+`proximity`, `spawnObject.at`) rather than a separate anchor list. As of **Night
+One** (`game/content/nightOne.ts`, IMPLEMENTATION_ROADMAP M9) the compound ships
+five **subtle** environmental anomalies (a light flicker, the wind dropping, the
+pump handle shifting, a distant metallic sound, a thickening fog) rotated in by the
+night's phases — atmosphere only, no monster or scare. The legacy spawn/score
+`AnomalySystem` (anchors) remains as M0 scaffold, unwired.
 
 Anchor rules:
 - **R-ANC-1** Every anchor must be **visible from a reachable standing position**

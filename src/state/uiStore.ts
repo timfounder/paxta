@@ -7,6 +7,7 @@ export const Screen = {
   Game: 'game',
   Settings: 'settings',
   GameOver: 'game-over',
+  NightComplete: 'night-complete',
 } as const;
 
 export type Screen = (typeof Screen)[keyof typeof Screen];

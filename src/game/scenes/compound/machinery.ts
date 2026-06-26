@@ -6,6 +6,8 @@ import { box, pillar } from './primitives';
 export interface Machinery {
   /** The generator housing — wired as the power-source Interactable by the scene. */
   readonly generator: Mesh;
+  /** The water-pump meshes — wired as an Examinable Interactable by the scene. */
+  readonly pump: readonly Mesh[];
 }
 
 /**
@@ -37,8 +39,13 @@ export const buildMachinery = (scene: Scene, palette: CompoundPalette): Machiner
   );
 
   // -- Water pump ------------------------------------------------------------
-  box(scene, 'pump-base', { w: 1, h: 0.6, d: 1, x: -12, y: 0.3, z: -16 }, palette.pipe);
-  pillar(
+  const pumpBase = box(
+    scene,
+    'pump-base',
+    { w: 1, h: 0.6, d: 1, x: -12, y: 0.3, z: -16 },
+    palette.pipe,
+  );
+  const pumpColumn = pillar(
     scene,
     'pump-column',
     { diameter: 0.24, height: 1.6, x: -12, y: 1.1, z: -16 },
@@ -60,5 +67,5 @@ export const buildMachinery = (scene: Scene, palette: CompoundPalette): Machiner
     false,
   );
 
-  return { generator };
+  return { generator, pump: [pumpBase, pumpColumn] };
 };

@@ -1,4 +1,4 @@
-import { Color3, Color4, Scene, Vector3, type Mesh } from '@babylonjs/core';
+import { Color3, Color4, Scene, Vector3 } from '@babylonjs/core';
 
 import { AtmosphereManager } from '@engine/atmosphere/AtmosphereManager';
 import { InteractionRegistry } from '@engine/interaction/InteractionRegistry';
@@ -30,10 +30,9 @@ import type {
   MissionDebugEntry,
   MissionConditionState,
 } from '../mission/missionDebug';
-import { COMPOUND_ANOMALIES } from '../content/anomalies';
-import { COMPOUND_NIGHT } from '../content/nights';
-import { COMPOUND_MISSIONS } from '../content/missions';
+import { NIGHT_ONE_ANOMALIES, NIGHT_ONE_MISSION, NIGHT_ONE_NIGHT } from '../content/nightOne';
 import { Door } from '../objects/Door';
+import { Examinable } from '../objects/Examinable';
 import { Generator } from '../objects/Generator';
 import { Lamp } from '../objects/Lamp';
 import { PickupItem } from '../objects/PickupItem';
@@ -42,7 +41,7 @@ import { loadSceneState, saveSceneState } from '../persistence/sceneState';
 import { buildStructures } from './compound/buildings';
 import { buildInteractives, type CompoundInteractives } from './compound/interactives';
 import { buildLighting } from './compound/lighting';
-import { buildMachinery } from './compound/machinery';
+import { buildMachinery, type Machinery } from './compound/machinery';
 import { createCompoundPalette } from './compound/palette';
 import { buildTerrain } from './compound/terrain';
 import { buildVegetation } from './compound/vegetation';
@@ -83,6 +82,10 @@ export class CompoundScene
   private night: NightDirector | null = null;
   private missionContext: CompoundMissionContext | null = null;
   private missions: MissionManager | null = null;
+  private nightStartMs = 0;
+  private interactionCount = 0;
+  private nightEnded = false;
+  private interactionUnsub: (() => void) | null = null;
 
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
@@ -100,7 +103,7 @@ export class CompoundScene
     const interactives = buildInteractives(scene, palette);
     buildVegetation(scene, palette);
 
-    this.composeInteractables(machinery.generator, interactives);
+    this.composeInteractables(machinery, interactives);
 
     this.player = new PlayerController(scene, this.context.world, this.context.events, SPAWN);
     const context: InteractionContext = { events: this.context.events };
@@ -123,6 +126,12 @@ export class CompoundScene
     this.buildNight(this.player, this.atmosphere);
     this.buildMissions(this.player, this.atmosphere);
 
+    // Lightweight night metrics (no new system): count interactions + time.
+    this.nightStartMs = performance.now();
+    this.interactionUnsub = this.context.events.on('interaction:performed', () => {
+      this.interactionCount += 1;
+    });
+
     this.restorePersisted();
     return Promise.resolve();
   }
@@ -142,6 +151,8 @@ export class CompoundScene
 
   protected override onUnload(): void {
     this.persist();
+    this.interactionUnsub?.();
+    this.interactionUnsub = null;
     this.settingsUnsub?.();
     this.settingsUnsub = null;
     this.missions = null;
@@ -239,12 +250,14 @@ export class CompoundScene
   // -- Wiring ----------------------------------------------------------------
 
   /** Build the concrete interactables, link their targets, and register them. */
-  private composeInteractables(generatorMesh: Mesh, interactives: CompoundInteractives): void {
-    // Lights are Activatable targets driven by the generator / switch.
+  private composeInteractables(machinery: Machinery, interactives: CompoundInteractives): void {
+    // Lights are Activatable targets driven by the generator / switch. The site
+    // arrives dark: the generator (and its work-light) start off — Night One's
+    // first task is to power up.
     const workLamp = new Lamp(interactives.generatorLight, {
       intensity: 1.2,
       flicker: true,
-      initiallyOn: true,
+      initiallyOn: false,
     });
     const entranceLamp = new Lamp(interactives.exteriorLight, {
       intensity: 0.9,
@@ -252,22 +265,26 @@ export class CompoundScene
     });
     this.updatables.push(workLamp, entranceLamp);
 
-    const generator = new Generator('generator', generatorMesh, [workLamp], true);
+    const generator = new Generator('generator', machinery.generator, [workLamp], false);
     const wallSwitch = new Switch(
       'entrance-switch',
       interactives.switchMesh,
       [entranceLamp],
       false,
     );
+    // The warehouse starts open so "lock the warehouse" is a real task.
     const door = new Door(
       'warehouse-door',
       interactives.door.hinge,
       interactives.door.leaf,
       DOOR_OPEN_ANGLE,
+      true,
     );
+    const pump = new Examinable('water-pump', machinery.pump, 'Check Pump');
     this.registry.register(generator);
     this.registry.register(wallSwitch);
     this.registry.register(door);
+    this.registry.register(pump);
     this.updatables.push(door);
 
     for (const spec of interactives.pickups) {
@@ -318,7 +335,7 @@ export class CompoundScene
     const manager = new AnomalyManager(context, {
       onChange: () => useAnomalyDebugStore.getState().setEntries(manager.getDebugSnapshot()),
     });
-    manager.registerAll(COMPOUND_ANOMALIES);
+    manager.registerAll(NIGHT_ONE_ANOMALIES);
     this.anomalyContext = context;
     this.anomalies = manager;
     useAnomalyDebugStore.getState().setEntries(manager.getDebugSnapshot());
@@ -336,7 +353,7 @@ export class CompoundScene
       inventory: this.inventory,
       events: this.context.events,
     });
-    const director = new NightDirector(COMPOUND_NIGHT, context, {
+    const director = new NightDirector(NIGHT_ONE_NIGHT, context, {
       onChange: () =>
         useNightDebugStore.getState().set(director.getStateView(), director.getTimelineView()),
     });
@@ -344,7 +361,7 @@ export class CompoundScene
     director.start();
   }
 
-  /** Build the data-driven mission engine over the example missions. */
+  /** Build the data-driven mission engine over the Night One shift. */
   private buildMissions(player: PlayerController, atmosphere: AtmosphereManager): void {
     const anomalies = this.anomalies;
     if (!anomalies) return;
@@ -359,13 +376,36 @@ export class CompoundScene
     });
     const manager = new MissionManager(context, {
       onChange: () => useMissionStore.getState().setMissions(manager.getViews()),
-      onNotify: (n) => useMissionStore.getState().pushNotice(n.kind, n.title),
+      onNotify: (n) => {
+        useMissionStore.getState().pushNotice(n.kind, n.title);
+        // The shift mission completing IS the end of the night.
+        if (n.kind === 'completed' && n.missionId === NIGHT_ONE_MISSION.id) this.endNight();
+      },
     });
     context.bind(manager);
-    manager.registerAll(COMPOUND_MISSIONS);
+    manager.registerAll([NIGHT_ONE_MISSION]);
     this.missionContext = context;
     this.missions = manager;
     useMissionStore.getState().setMissions(manager.getViews());
+  }
+
+  /** The shift is done: gather the night's metrics and announce completion. */
+  private endNight(): void {
+    if (this.nightEnded) return;
+    this.nightEnded = true;
+    const anomalyTriggers = (this.anomalies?.getDebugSnapshot() ?? []).reduce(
+      (sum, entry) => sum + entry.activations,
+      0,
+    );
+    const objectives =
+      this.missions?.getViews().find((m) => m.id === NIGHT_ONE_MISSION.id)?.objectives ?? [];
+    this.context.events.emit('night:completed', {
+      completionMs: performance.now() - this.nightStartMs,
+      objectivesCompleted: objectives.filter((o) => o.state === 'complete').length,
+      objectivesTotal: objectives.length,
+      anomalyTriggers,
+      interactionCount: this.interactionCount,
+    });
   }
 
   // -- Mission debug surface (MissionDebuggable) -----------------------------

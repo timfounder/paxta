@@ -32,10 +32,14 @@ export class Door implements Interactable, Stateful, Updatable {
     private readonly hinge: TransformNode,
     private readonly leaf: Mesh,
     private readonly openAngle: number,
+    initiallyOpen = false,
   ) {
     this.id = asBrand<InteractableId>(id);
     this.meshes = [leaf];
-    this.leaf.checkCollisions = true;
+    this.open = initiallyOpen;
+    this.angle = initiallyOpen ? openAngle : 0;
+    this.hinge.rotation.y = this.angle;
+    this.leaf.checkCollisions = !initiallyOpen;
   }
 
   public get targetMeshes(): readonly Mesh[] {

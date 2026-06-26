@@ -13,11 +13,14 @@ documents disagree, the **owner** of the disputed fact (see table) wins.
 > Director — data-driven orchestration of the six-phase night: pacing, tension and
 > progression), M8 (Mission Framework — data-driven objectives / progression /
 > rewards / save, integrating every system with no duplicated logic; widget,
-> tracker, notifications and developer tools). Game design complete (see
+> tracker, notifications and developer tools), M9 (First Playable Night — the first
+> complete, finishable shift composed from the existing systems: five objectives, a
+> handful of subtle anomalies, a Night Complete summary; no monster, no scare).
+> Game design complete (see
 > [design/GDD](./design/GDD.md)). **Production Mode is in force** — every milestone
 > follows [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
 > Next: horror systems (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
-> Last reviewed: 2026-06-26 · Doc set version: 1.9
+> Last reviewed: 2026-06-26 · Doc set version: 2.0
 
 > **Two layers of docs.** The files in this folder are the **pillar docs**
 > (principles, standards, constraints). The detailed **game design** lives in

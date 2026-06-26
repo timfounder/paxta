@@ -34,6 +34,15 @@ export interface GameEventMap {
   'player:sanity-changed': { readonly value: number; readonly delta: number };
   'player:died': { readonly cause: string };
 
+  // Night -------------------------------------------------------------------
+  'night:completed': {
+    readonly completionMs: number;
+    readonly objectivesCompleted: number;
+    readonly objectivesTotal: number;
+    readonly anomalyTriggers: number;
+    readonly interactionCount: number;
+  };
+
   // Quest -------------------------------------------------------------------
   'quest:started': { readonly questId: QuestId };
   'quest:objective-completed': { readonly questId: QuestId; readonly objectiveId: ObjectiveId };

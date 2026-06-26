@@ -139,7 +139,7 @@ Two communication channels exist and must not be confused:
 
 ## 6. State management (Zustand)
 
-Seven stores (mirrors UI/gameplay split); the last four are read-only projections:
+Eight stores (mirrors UI/gameplay split); the last five are read-only projections:
 
 - `gameStore` — **game progression**: phase, Sanity, score, hits/misses, scene.
   It is the **only writer** of Sanity/score; it mirrors key facts to the bus.
@@ -156,6 +156,9 @@ Seven stores (mirrors UI/gameplay split); the last four are read-only projection
 - `missionStore` — **read-only mirror** of the `MissionManager`'s mission views
   for the current-mission widget + tracker, plus the latest notice for the
   start/complete/fail notifications and the completion animation.
+- `nightSummaryStore` — the end-of-night metrics (completion time, objectives,
+  anomaly activations, interaction count) `Game` sets on `night:completed` and the
+  `NightCompleteScreen` renders; cleared on enter / exit.
 
 Rules:
 - **R-ST-1** Systems read/write game state **through injected sinks**

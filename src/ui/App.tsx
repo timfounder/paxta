@@ -10,6 +10,7 @@ import { GameOverScreen } from './screens/GameOverScreen';
 import { GameScreen } from './screens/GameScreen';
 import { LoadingScreen } from './screens/LoadingScreen';
 import { MenuScreen } from './screens/MenuScreen';
+import { NightCompleteScreen } from './screens/NightCompleteScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 
 /**
@@ -37,6 +38,9 @@ export const App = (): React.JSX.Element => {
     if (screen === Screen.Game) {
       return telegram.showBackButton(() => game?.pause());
     }
+    if (screen === Screen.NightComplete) {
+      return telegram.showBackButton(() => game?.exitToMenu());
+    }
     if (screen === Screen.Settings || screen === Screen.GameOver) {
       return telegram.showBackButton(() => useUiStore.getState().setScreen(Screen.Menu));
     }
@@ -52,6 +56,7 @@ export const App = (): React.JSX.Element => {
         {screen === Screen.Game && <GameScreen game={game} />}
         {screen === Screen.Settings && <SettingsScreen />}
         {screen === Screen.GameOver && <GameOverScreen />}
+        {screen === Screen.NightComplete && <NightCompleteScreen game={game} />}
       </div>
       <Toast />
     </div>

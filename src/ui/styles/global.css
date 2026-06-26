@@ -100,6 +100,35 @@ body {
   background: radial-gradient(circle at 50% 30%, rgba(179, 18, 43, 0.18), var(--tg-bg) 70%);
 }
 
+.screen--night-complete {
+  background: radial-gradient(circle at 50% 35%, rgba(47, 90, 120, 0.22), var(--tg-bg) 72%);
+}
+
+.night-summary {
+  width: min(320px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.night-summary__row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+}
+
+.night-summary__row dt {
+  color: var(--tg-hint);
+  letter-spacing: 0.05em;
+}
+
+.night-summary__row dd {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .title {
   font-size: clamp(2.5rem, 14vw, 4.5rem);
   letter-spacing: 0.4em;

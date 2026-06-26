@@ -366,12 +366,47 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
+### M9 — First Playable Night (the first complete shift) ✅
+> **The first integration milestone — content, not systems.** Where M5–M8 built
+> reusable frameworks, M9 composes them into one complete, finishable ~12–15 min
+> night using **only existing systems** (no new core systems). It is the proof the
+> stack plays as a game end-to-end.
+- **Goal:** the player arrives at the cotton compound for a first night shift and
+  completes a five-objective patrol — turn on the generator, check the water pump,
+  lock the warehouse, find the missing fuel can, return to the guard house — then
+  the night ends with a summary screen.
+- **Architecture:** pure **content** in `game/content/nightOne.ts` — five subtle
+  environmental anomalies (`light`/`wind`/`moveObject`/`playSound`/`atmosphere`
+  effects), a six-phase `NightDefinition` (Preparation → Resolution) that raises
+  tension and rotates the anomaly subset, and a `MissionDefinition` whose five
+  objectives are a single sequence reusing existing signals (`activate`, `inspect`,
+  `collect`, `reach`). Minimal glue only: an `Examinable` interactable for the
+  pump, a `Door initiallyOpen` flag (the warehouse starts open so locking it is a
+  real task; the generator starts off so powering up is real), a third `fuel-can`
+  pickup. The **shift mission's completion drives the ending** — the scene listens
+  for it, sums per-night metrics (completion time, objectives, anomaly activations,
+  interaction count) and emits `night:completed`; `Game` freezes the run and shows
+  a **Night Complete** screen (`nightSummaryStore` → `NightCompleteScreen`) offering
+  another night or the menu.
+- **Depends on:** the Player core, World, Interaction system, M5 (atmosphere),
+  M6 (anomaly engine), M7 (night director), M8 (mission framework).
+- **Playable:** a complete, winnable first night — five tracked objectives, a
+  handful of anomalies that make you *wonder* whether anything changed, and a calm
+  close on the summary screen. **No monster, no chase, no jump scare.**
+- **DoD:** finishable start-to-finish reusing existing systems only (no new core
+  systems); subtle atmosphere only; metrics collected; the night ends and reports
+  on the Night Complete screen; gates green (74 unit tests; runtime-verified
+  mission-completion → Night Complete + metrics flow under headless SwiftShader).
+- **Size:** L (content + thin integration glue).
+
+---
+
 > **Horror track — provisional numbering.** The milestones below (still labelled
 > M4–M12) predate the Director's M2–M4 reseries and are **planning placeholders**;
 > their numbers, build-order and dependency references will be reassigned when
 > reached. The shipped sequence to date is M0 → M2 (Player) → M3 (Compound) →
 > M4 (Core Gameplay Loop) → M5 (Atmosphere Framework) → M6 (Anomaly Engine) →
-> M7 (Night Director) → M8 (Mission Framework, above).
+> M7 (Night Director) → M8 (Mission Framework) → M9 (First Playable Night, above).
 
 ### M4 — Doubt + Audio & Environmental kinds
 - **Goal:** the full three-kind perception game with **psychological doubt**.
