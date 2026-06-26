@@ -11,11 +11,13 @@ documents disagree, the **owner** of the disputed fact (see table) wins.
 > moonlight, silent lightning, and a procedural ambience bed), M6 (Anomaly
 > Engine — a data-driven anomaly framework with a developer overlay), M7 (Night
 > Director — data-driven orchestration of the six-phase night: pacing, tension and
-> progression, with a developer panel). Game design complete (see
+> progression), M8 (Mission Framework — data-driven objectives / progression /
+> rewards / save, integrating every system with no duplicated logic; widget,
+> tracker, notifications and developer tools). Game design complete (see
 > [design/GDD](./design/GDD.md)). **Production Mode is in force** — every milestone
 > follows [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
 > Next: horror systems (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
-> Last reviewed: 2026-06-26 · Doc set version: 1.8
+> Last reviewed: 2026-06-26 · Doc set version: 1.9
 
 > **Two layers of docs.** The files in this folder are the **pillar docs**
 > (principles, standards, constraints). The detailed **game design** lives in

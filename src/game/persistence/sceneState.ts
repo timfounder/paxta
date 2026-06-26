@@ -2,6 +2,7 @@ import type { InteractionSnapshot } from '@engine/interaction/InteractionRegistr
 import { GAME } from '@shared/constants/game';
 import { readJson, writeJson } from '@shared/utils/localStore';
 import type { InventorySnapshot } from '@systems/inventory/inventory.types';
+import type { MissionSnapshot } from '@systems/mission/mission.types';
 
 /**
  * One scene's persisted runtime state: the state of every {@link Stateful}
@@ -14,6 +15,8 @@ export interface PersistedSceneState {
   readonly version: number;
   readonly interactables: InteractionSnapshot;
   readonly inventory: InventorySnapshot;
+  /** Mission progress (added in M8; optional for back-compatible loads). */
+  readonly missions?: MissionSnapshot;
 }
 
 const keyFor = (sceneId: string): string => `${GAME.STORAGE_PREFIX}:scene-state:${sceneId}`;
@@ -29,10 +32,12 @@ export const saveSceneState = (
   sceneId: string,
   interactables: InteractionSnapshot,
   inventory: InventorySnapshot,
+  missions: MissionSnapshot,
 ): void => {
   writeJson(keyFor(sceneId), {
     version: GAME.SAVE_VERSION,
     interactables,
     inventory,
+    missions,
   } satisfies PersistedSceneState);
 };

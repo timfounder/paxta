@@ -58,16 +58,18 @@ src/
 │   ├── quest/       QuestSystem — quest/objective state machine
 │   ├── inventory/   Inventory — pure carried-items store (capacity, carry order)
 │   ├── anomaly/     Data-driven anomaly engine (manager, scheduler, kinds, pool)
-│   └── night/       Night Director (state, timeline, sequence, conditions/actions)
+│   ├── night/       Night Director (state, timeline, sequence, conditions/actions)
+│   └── mission/     Mission framework (manager, state, objective/reward/trigger kinds)
 ├── game/          Concrete game: composition root + content (uses engine+systems)
 │   ├── Game         The façade React drives; wires every system together
 │   ├── scenes/      Concrete locations (CompoundScene + compound/ builders)
 │   ├── objects/     Reusable interactables (Door, Switch, Generator, Lamp, PickupItem)
 │   ├── anomaly/     Anomaly context + actuators wiring the engine to the scene
 │   ├── night/       Night context wiring the director to the scene's systems
-│   ├── persistence/ Per-scene interaction + inventory state
-│   └── content/     Quest + anomaly + night definitions (data)
-├── state/         Zustand stores: gameStore, uiStore, settingsStore, inventoryStore, anomalyDebugStore, nightDebugStore
+│   ├── mission/     Mission context reusing existing signals for objectives
+│   ├── persistence/ Per-scene interaction + inventory + mission state
+│   └── content/     Quest + anomaly + night + mission definitions (data)
+├── state/         Zustand stores: gameStore, uiStore, settingsStore, inventoryStore, anomalyDebugStore, nightDebugStore, missionStore
 ├── telegram/      Fail-safe wrapper over the Telegram Mini Apps platform
 ├── services/      External integrations (Supabase client — prepared)
 ├── app/           App-wide configuration (validated environment)

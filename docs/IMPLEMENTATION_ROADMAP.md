@@ -328,12 +328,50 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
+### M8 — Mission Framework (data-driven objectives) ✅
+> **Inserted before the horror track.** The Director scoped M8 as the production
+> mission framework — objectives / progress / branching / rewards / save — every
+> future night and chapter expresses its goals through, integrating the existing
+> systems with no duplicated logic. Provisional horror numbers unchanged.
+- **Goal:** support all future gameplay (objectives, progression, branching) from
+  data, with no engine changes per mission, and unlimited missions.
+- **Architecture:** a pure framework in `systems/mission/` — `MissionManager`
+  (compile-once defs, coarse evaluation: trigger → start conditions → objective
+  tracking → completion/rewards/fail/retry, owns flags + the save/load snapshot),
+  `MissionState` (per-mission objective runtime with dependencies, sequences,
+  hidden/optional), and type-keyed registries for **objectives** (reach, interact,
+  inspect, activate, collect, deliver, wait, survive), **conditions** (hasItem,
+  phase, flag, generator, anomalies), **rewards** (setFlag, enable/trigger anomaly,
+  flash, dialogue, startMission) and **triggers** (auto, onPhase, onFlag,
+  afterMission, onSignal). Objectives detect progress by **reusing existing
+  signals** — the interaction event (enriched with the object id), inventory,
+  the interaction registry, the night phase, the anomaly count — through
+  `MissionContext` ports (no duplicated logic). The game layer (`game/mission/`)
+  fulfils them; missions are data in `game/content/missions.ts`; state persists in
+  the per-scene save. UI: a current-mission widget + objective tracker, start/
+  complete/fail notifications with a completion animation, and a developer panel
+  (complete / skip-objective / restart / view conditions).
+- **Depends on:** the interaction system, inventory, M5 (atmosphere), M6 (anomaly),
+  M7 (night phase), the per-scene persistence.
+- **Playable:** the compound runs an example patrol → key-errand → vigil chain —
+  reach / activate / interact / collect / deliver / survive objectives tracked in
+  the widget, with notifications, a completion flourish, and full debug tools.
+- **DoD:** fully data-driven (no hardcoded missions); unlimited missions; no
+  duplicated detection logic (reuses existing signals); save/load; no per-frame
+  allocation (compile-once, 4 Hz evaluation); the developer tools complete / skip /
+  restart / inspect; gates green (74 unit tests; runtime-verified objective
+  completion + debug + chaining under headless SwiftShader). **No story, no Night
+  One — only the framework.**
+- **Size:** XL.
+
+---
+
 > **Horror track — provisional numbering.** The milestones below (still labelled
 > M4–M12) predate the Director's M2–M4 reseries and are **planning placeholders**;
 > their numbers, build-order and dependency references will be reassigned when
 > reached. The shipped sequence to date is M0 → M2 (Player) → M3 (Compound) →
 > M4 (Core Gameplay Loop) → M5 (Atmosphere Framework) → M6 (Anomaly Engine) →
-> M7 (Night Director, above).
+> M7 (Night Director) → M8 (Mission Framework, above).
 
 ### M4 — Doubt + Audio & Environmental kinds
 - **Goal:** the full three-kind perception game with **psychological doubt**.

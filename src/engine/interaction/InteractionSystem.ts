@@ -43,7 +43,10 @@ export class InteractionSystem {
     const target = this.current;
     if (!target || target.getPrompt() === null) return;
     target.interact(this.context);
-    this.context.events.emit('interaction:performed', { prompt: target.getPrompt() ?? '' });
+    this.context.events.emit('interaction:performed', {
+      id: target.id,
+      prompt: target.getPrompt() ?? '',
+    });
     // Acting may change the prompt (Open → Close) or end interactivity; refresh.
     this.setFocus(target.getPrompt() !== null ? target : null, true);
   }

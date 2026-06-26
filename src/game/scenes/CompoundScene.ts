@@ -14,16 +14,25 @@ import { Inventory } from '@systems/inventory/Inventory';
 import { AudioChannel } from '@systems/audio/audio.types';
 import { AnomalyManager } from '@systems/anomaly/AnomalyManager';
 import { NightDirector } from '@systems/night/NightDirector';
+import { MissionManager } from '@systems/mission/MissionManager';
 import { useSettingsStore } from '@state/settingsStore';
 import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
 import { useNightDebugStore } from '@state/nightDebugStore';
+import { useMissionStore } from '@state/missionStore';
 
 import { CompoundAnomalyContext } from '../anomaly/CompoundAnomalyContext';
 import type { AnomalyDebuggable, AnomalyDebugEntry } from '../anomaly/anomalyDebug';
 import { CompoundNightContext } from '../night/CompoundNightContext';
 import type { NightDebuggable, NightStateView, NightTimelineEntryView } from '../night/nightDebug';
+import { CompoundMissionContext } from '../mission/CompoundMissionContext';
+import type {
+  MissionDebuggable,
+  MissionDebugEntry,
+  MissionConditionState,
+} from '../mission/missionDebug';
 import { COMPOUND_ANOMALIES } from '../content/anomalies';
 import { COMPOUND_NIGHT } from '../content/nights';
+import { COMPOUND_MISSIONS } from '../content/missions';
 import { Door } from '../objects/Door';
 import { Generator } from '../objects/Generator';
 import { Lamp } from '../objects/Lamp';
@@ -57,7 +66,7 @@ const DOOR_OPEN_ANGLE = -Math.PI * 0.52;
  */
 export class CompoundScene
   extends BaseScene
-  implements ControllableScene, AnomalyDebuggable, NightDebuggable
+  implements ControllableScene, AnomalyDebuggable, NightDebuggable, MissionDebuggable
 {
   public readonly id: SceneId = SceneIds.Compound;
 
@@ -72,6 +81,8 @@ export class CompoundScene
   private anomalyContext: CompoundAnomalyContext | null = null;
   private anomalies: AnomalyManager | null = null;
   private night: NightDirector | null = null;
+  private missionContext: CompoundMissionContext | null = null;
+  private missions: MissionManager | null = null;
 
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
@@ -110,6 +121,7 @@ export class CompoundScene
 
     this.buildAnomalyEngine(this.player, this.atmosphere);
     this.buildNight(this.player, this.atmosphere);
+    this.buildMissions(this.player, this.atmosphere);
 
     this.restorePersisted();
     return Promise.resolve();
@@ -125,12 +137,17 @@ export class CompoundScene
     this.atmosphere?.update(deltaSeconds);
     this.anomalyContext?.tick(deltaSeconds);
     this.anomalies?.update(deltaSeconds);
+    this.missions?.update(deltaSeconds);
   }
 
   protected override onUnload(): void {
     this.persist();
     this.settingsUnsub?.();
     this.settingsUnsub = null;
+    this.missions = null;
+    this.missionContext?.dispose();
+    this.missionContext = null;
+    useMissionStore.getState().reset();
     this.night?.dispose();
     this.night = null;
     useNightDebugStore.getState().reset();
@@ -327,6 +344,52 @@ export class CompoundScene
     director.start();
   }
 
+  /** Build the data-driven mission engine over the example missions. */
+  private buildMissions(player: PlayerController, atmosphere: AtmosphereManager): void {
+    const anomalies = this.anomalies;
+    if (!anomalies) return;
+    const context = new CompoundMissionContext({
+      player,
+      registry: this.registry,
+      inventory: this.inventory,
+      anomalies,
+      atmosphere,
+      events: this.context.events,
+      nightPhase: () => this.night?.getStateView().phase ?? 'preparation',
+    });
+    const manager = new MissionManager(context, {
+      onChange: () => useMissionStore.getState().setMissions(manager.getViews()),
+      onNotify: (n) => useMissionStore.getState().pushNotice(n.kind, n.title),
+    });
+    context.bind(manager);
+    manager.registerAll(COMPOUND_MISSIONS);
+    this.missionContext = context;
+    this.missions = manager;
+    useMissionStore.getState().setMissions(manager.getViews());
+  }
+
+  // -- Mission debug surface (MissionDebuggable) -----------------------------
+
+  public listMissions(): readonly MissionDebugEntry[] {
+    return this.missions?.getDebugSnapshot() ?? [];
+  }
+
+  public completeMissionDebug(id: string): void {
+    this.missions?.forceComplete(id);
+  }
+
+  public skipObjectiveDebug(missionId: string, objectiveId: string): void {
+    this.missions?.skipObjective(missionId, objectiveId);
+  }
+
+  public restartMissionDebug(id: string): void {
+    this.missions?.restartMission(id);
+  }
+
+  public missionConditions(id: string): readonly MissionConditionState[] {
+    return this.missions?.conditionStates(id) ?? [];
+  }
+
   // -- Persistence -----------------------------------------------------------
 
   private restorePersisted(): void {
@@ -334,10 +397,16 @@ export class CompoundScene
     if (!saved) return;
     this.interactions?.restore(saved.interactables);
     this.inventory.restore(saved.inventory);
+    if (saved.missions) this.missions?.restore(saved.missions);
   }
 
   private persist(): void {
     if (!this.interactions) return;
-    saveSceneState(this.id, this.interactions.snapshot(), this.inventory.snapshot());
+    saveSceneState(
+      this.id,
+      this.interactions.snapshot(),
+      this.inventory.snapshot(),
+      this.missions?.snapshot() ?? { missions: [], flags: [] },
+    );
   }
 }

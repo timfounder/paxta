@@ -9,8 +9,15 @@ import { Screen, useUiStore } from '@state/uiStore';
 import { useSettingsStore } from '@state/settingsStore';
 import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
 import { useNightDebugStore } from '@state/nightDebugStore';
+import { useMissionStore } from '@state/missionStore';
 import { isAnomalyDebuggable, type AnomalyDebuggable } from './anomaly/anomalyDebug';
 import { isNightDebuggable, type NightDebuggable } from './night/nightDebug';
+import {
+  isMissionDebuggable,
+  type MissionConditionState,
+  type MissionDebugEntry,
+  type MissionDebuggable,
+} from './mission/missionDebug';
 import { AudioChannel } from '@systems/audio/audio.types';
 import { AudioManager } from '@systems/audio/AudioManager';
 import { PLAYER } from '@shared/constants/game';
@@ -148,6 +155,32 @@ export class Game {
     this.nightDebuggable?.triggerNightEvent(id);
   }
 
+  /** The active scene if it exposes the mission debug surface, else null. */
+  private get missionDebuggable(): MissionDebuggable | null {
+    const scene = this.engine?.scenes.activeScene;
+    return scene && isMissionDebuggable(scene) ? scene : null;
+  }
+
+  public listMissions(): readonly MissionDebugEntry[] {
+    return this.missionDebuggable?.listMissions() ?? [];
+  }
+
+  public completeMission(id: string): void {
+    this.missionDebuggable?.completeMissionDebug(id);
+  }
+
+  public skipObjective(missionId: string, objectiveId: string): void {
+    this.missionDebuggable?.skipObjectiveDebug(missionId, objectiveId);
+  }
+
+  public restartMission(id: string): void {
+    this.missionDebuggable?.restartMissionDebug(id);
+  }
+
+  public missionConditions(id: string): readonly MissionConditionState[] {
+    return this.missionDebuggable?.missionConditions(id) ?? [];
+  }
+
   public pause(): void {
     this.setMoveInput(0, 0);
     this.controllable?.setSprint(false);
@@ -170,6 +203,7 @@ export class Game {
     useInventoryStore.getState().reset();
     useAnomalyDebugStore.getState().reset();
     useNightDebugStore.getState().reset();
+    useMissionStore.getState().reset();
     useUiStore.getState().setHudVisible(false);
     useUiStore.getState().setInteractionPrompt(null);
     useUiStore.getState().setScreen(Screen.Menu);

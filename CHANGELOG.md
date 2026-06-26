@@ -8,6 +8,45 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
+## [Unreleased]
+
+Milestone 8 — **Mission Framework**: a production, data-driven mission framework
+supporting all future gameplay without engine changes, integrating the existing
+systems with no duplicated logic. No story, no Night One — only the framework.
+Pending approval and tag.
+
+### Added
+
+- **Mission framework** (`systems/mission/`, pure / Babylon-free):
+  - `MissionManager` — compiles each definition once, then on a coarse tick starts
+    eligible missions (trigger → start conditions), advances objectives, and
+    resolves completion (rewards + chaining), failure and retry; owns shared flags
+    and the save/load snapshot.
+  - `MissionState` — per-mission objective runtime with dependencies, sequences
+    (multi-step), and hidden / optional objectives.
+  - Type-keyed registries: **objectives** (reach, interact, inspect, activate,
+    collect, deliver, wait, survive), **conditions** (hasItem, phase, flag,
+    generator, anomalies), **rewards** (setFlag, enable/trigger anomaly, flash,
+    dialogue, startMission) and **triggers** (auto, onPhase, onFlag, afterMission,
+    onSignal). Objectives detect progress by **reusing existing signals** through
+    `MissionContext` ports — no duplicated logic.
+- **Game-layer wiring** (`game/mission/`): a `CompoundMissionContext` feeding the
+  ports from the player / inventory / interaction registry+event / night phase /
+  anomaly count, and acting through the anomaly + atmosphere systems. Example
+  missions in `game/content/missions.ts`; mission state persists in the per-scene save.
+- **UI**: a current-mission widget + objective tracker (`MissionWidget`), start /
+  complete / fail notifications with a completion animation (`MissionNotice`), and
+  a developer panel (`MissionDebugPanel`: complete / skip-objective / restart /
+  view conditions) — mirrored through `missionStore`.
+- Unit tests for the manager (objectives, deps, optional, fail/retry, save/load;
+  suite now 74 tests). Shared `shared/utils/params` accessors (de-duplicated).
+
+### Changed
+
+- `interaction:performed` now carries the interacted object's `id` (so mission
+  objectives can detect specific interactions without new logic).
+- The per-scene save (`sceneState`) now includes mission progress.
+
 ## [0.7.0-alpha] — 2026-06-26
 
 Milestone 7 — **Night Director**: data-driven orchestration of the complete

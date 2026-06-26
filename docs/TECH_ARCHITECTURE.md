@@ -70,14 +70,15 @@ src/
 │                 ── generic Babylon
 ├── systems/     audio/ save/ quest/ inventory/, anomaly/ (data-driven engine:
 │                 manager, scheduler, condition/effect/trigger registries, pool),
-│                 night/ (Night Director: state, timeline, sequence, conditions/
-│                 actions) ── game systems
+│                 night/ (Night Director), mission/ (Mission framework: manager,
+│                 state, objective/condition/reward/trigger registries) ── systems
 ├── game/        Game (composition root), scenes/ (CompoundScene + compound/
 │                 builders), objects/ (Door, Switch, Generator, Lamp, PickupItem),
-│                 anomaly/ + night/ (contexts wiring the engines to the scene),
-│                 persistence/ (per-scene state), content/ (quests, anomalies, nights)
+│                 anomaly/ + night/ + mission/ (contexts wiring the engines to the
+│                 scene), persistence/ (per-scene state), content/ (quests,
+│                 anomalies, nights, missions)
 ├── state/       gameStore · uiStore · settingsStore · inventoryStore ·
-│                 anomalyDebugStore · nightDebugStore (Zustand)
+│                 anomalyDebugStore · nightDebugStore · missionStore (Zustand)
 ├── telegram/    TelegramService (+ typings)  ── fail-safe platform wrapper
 ├── services/    supabase/ (prepared client)
 ├── app/         config/env  ── validated environment
@@ -110,6 +111,7 @@ chunks tree-shakeable and dependencies explicit).
 | `AtmosphereManager` | `engine/atmosphere/` | Reusable, data-driven environmental tension: wind (GPU vertex sway), fog/moonlight drift, silent lightning, and a procedural Web-Audio ambience bed. No enemies/anomalies/scares. |
 | `AnomalyManager` | `systems/anomaly/` | Data-driven anomaly engine: compiles definitions, schedules (random/weighted/cooldown/once/chain/deps/night), and runs modular condition/effect/trigger kinds through injected ports. No hardcoded anomaly logic. |
 | `NightDirector` | `systems/night/` | Data-driven night orchestration: advances the six phases, eases tension into the atmosphere, enables each phase's anomaly set, and drives timeline/random/sequenced events. No hardcoded night content. |
+| `MissionManager` | `systems/mission/` | Data-driven mission engine: objectives (reach/interact/collect/…) tracked by reusing existing signals, dependencies/sequences, conditions, rewards, fail/retry, and save/load. No hardcoded missions, no duplicated detection. |
 | `Game` | `game/Game.ts` | Composition root + façade for React. |
 
 **R-SYS-1** Each system has exactly one responsibility (SRP). If you can't name it
@@ -137,7 +139,7 @@ Two communication channels exist and must not be confused:
 
 ## 6. State management (Zustand)
 
-Six stores (mirrors UI/gameplay split); the last three are read-only projections:
+Seven stores (mirrors UI/gameplay split); the last four are read-only projections:
 
 - `gameStore` — **game progression**: phase, Sanity, score, hits/misses, scene.
   It is the **only writer** of Sanity/score; it mirrors key facts to the bus.
@@ -151,6 +153,9 @@ Six stores (mirrors UI/gameplay split); the last three are read-only projections
   for the developer overlay; the manager pushes a snapshot on every change.
 - `nightDebugStore` — **read-only mirror** of the `NightDirector`'s state +
   timeline for the developer panel; pushed on every phase / event / objective.
+- `missionStore` — **read-only mirror** of the `MissionManager`'s mission views
+  for the current-mission widget + tracker, plus the latest notice for the
+  start/complete/fail notifications and the completion animation.
 
 Rules:
 - **R-ST-1** Systems read/write game state **through injected sinks**

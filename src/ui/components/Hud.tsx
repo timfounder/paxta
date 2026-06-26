@@ -7,6 +7,9 @@ import { FpsMeter } from './FpsMeter';
 import { InteractionPrompt } from './InteractionPrompt';
 import { InventoryBar } from './InventoryBar';
 import { LookLayer } from './LookLayer';
+import { MissionDebugPanel } from './MissionDebugPanel';
+import { MissionNotice } from './MissionNotice';
+import { MissionWidget } from './MissionWidget';
 import { MovementJoystick } from './MovementJoystick';
 import { NightDirectorPanel } from './NightDirectorPanel';
 import { Reticle } from './Reticle';
@@ -36,9 +39,12 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
         </button>
       </div>
 
+      <MissionWidget />
+      <MissionNotice />
       <InventoryBar />
       <AnomalyDebugOverlay game={game} />
       <NightDirectorPanel game={game} />
+      <MissionDebugPanel game={game} />
       <MovementJoystick onChange={(x, y) => game?.setMoveInput(x, y)} />
       <ActionButtons game={game} />
     </div>

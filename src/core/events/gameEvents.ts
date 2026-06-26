@@ -42,7 +42,7 @@ export interface GameEventMap {
 
   // Interaction -------------------------------------------------------------
   'interaction:focus-changed': { readonly prompt: string | null };
-  'interaction:performed': { readonly prompt: string };
+  'interaction:performed': { readonly id: string; readonly prompt: string };
 
   // Inventory ---------------------------------------------------------------
   // Payload is the full contents (inline shape — core must not import systems).
