@@ -8,11 +8,11 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
-## [Unreleased]
+## [0.5.0-alpha] — 2026-06-26
 
 Milestone 5 — **Atmosphere Framework**: a reusable, data-driven system that
 generates tension from the environment itself — no enemies, anomalies or scripted
-scares. Pending approval and tag.
+scares.
 
 ### Added
 
@@ -104,4 +104,5 @@ The Telegram Mini App shell: loading screen, main menu and settings, a playable
 empty level, mobile controls, and a lazily-loaded Babylon engine at a stable
 60 FPS.
 
+[0.5.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.5.0-alpha
 [0.4.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.4.0-alpha
