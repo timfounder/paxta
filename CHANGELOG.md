@@ -1,0 +1,76 @@
+# Changelog
+
+All notable changes to **PAXTA** are documented here.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
+the project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Releases are cut per engineering milestone (see
+[`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
+`vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
+
+## [0.4.0-alpha] — 2026-06-26
+
+Milestone 4 — **Core Gameplay Loop**: the universal interaction + inventory
+foundation every future mechanic plugs into, with no change to the foundation
+itself. Built on the M3 compound and the M2 player.
+
+### Added
+
+- **Interaction framework** (`engine/interaction/`, fully generic): a common
+  `Interactable` interface (with `Activatable` / `Stateful` / `Updatable`), an
+  `InteractionRegistry` (mesh→object O(1) ray resolve + id index for save), an
+  `InteractionSystem` (throttled camera forward-ray → focus → dispatch), and a
+  per-mesh `HighlightController` (cheap `renderOutline`).
+- **Reusable world objects** (`game/objects/`): `Door` (frame-independent hinge
+  swing, collision-aware), `ToggleControl` → `Switch` / `Generator` (drive
+  `Activatable` lights), `Lamp` (`Activatable` + flicker), `PickupItem`
+  (pick up / drop into the inventory).
+- **Inventory system** (`systems/inventory/`): a pure, framework-free store
+  (capacity, uniqueness, carry order) emitting `inventory:changed`;
+  `state/inventoryStore` mirrors it for the HUD.
+- **Save interaction state**: per-scene interaction + inventory persistence
+  (`game/persistence/sceneState`) over a new fail-safe `shared/utils/localStore`.
+- **HUD**: a centred interaction prompt, an inventory bar, and a contextual Drop
+  action (`Q`/`G` on desktop); `dropItem` added to the `ControllableScene`
+  contract.
+- **Compound interactives**: a hinged warehouse door, a generator that powers the
+  warehouse work-light, a guard-house switch for the entrance light, and loose
+  pickups (Rusted Key, Metal Tag).
+- Tests for `Inventory` and `InteractionRegistry` (suite now 40 tests).
+
+### Changed
+
+- `PlayerController` is reduced to **locomotion only** and exposes its camera; the
+  scene-level interaction system rays from it.
+- `CompoundScene` wires the registry, objects, and persistence, and now holds the
+  4-light budget via two switched lights (generator work-light + entrance light).
+- The interaction framework stays free of gameplay systems: `InteractionContext`
+  carries only the event bus, and game-layer objects inject the systems they need
+  (`PickupItem` takes an `InventoryPort`) — preserving the inward-only dependency
+  rule.
+
+### Removed
+
+- The M2 player-owned interaction probe (`engine/player/interaction/`),
+  superseded by the scene-level interaction system.
+- The retired `HallwayScene` (the compound is the canonical scene).
+
+## [0.3.0-alpha] — Milestone 3: World & Environment
+
+The explorable **PAXTA cotton compound** (guard house, open warehouse, generator,
+pump, instanced cotton field and tree line, fog and moonlight), built on the M2
+player as `CompoundScene` with small `compound/` builder modules.
+
+## [0.2.0-alpha] — Milestone 2: Player Core
+
+A production-grade first-person controller: gravity, collision, sprint, crouch,
+smoothed look, and head-bob, decomposed under `engine/player/` and driven by the
+mobile control layer.
+
+## [0.1.0-alpha] — Milestone 1: Shell & Mobile Controls
+
+The Telegram Mini App shell: loading screen, main menu and settings, a playable
+empty level, mobile controls, and a lazily-loaded Babylon engine at a stable
+60 FPS.
+
+[0.4.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.4.0-alpha
