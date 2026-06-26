@@ -8,6 +8,37 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
+## [Unreleased]
+
+Milestone 5 — **Atmosphere Framework**: a reusable, data-driven system that
+generates tension from the environment itself — no enemies, anomalies or scripted
+scares. Pending approval and tag.
+
+### Added
+
+- **`AtmosphereManager`** (`engine/atmosphere/`) — one reusable update seam tuned
+  entirely by `shared/constants/atmosphere.ts`, composing:
+  - **Wind**: a gusting strength scalar that sways the canopy and cotton via a GPU
+    vertex shader (`WindMaterialPlugin` — no per-instance CPU; trunks stay rigid)
+    and drives the wind audio layers.
+  - **Sky**: drifting fog density and moonlight, plus rare **silent distant
+    lightning** (a flash on the existing moon/ambient lights — no rain) with
+    delayed thunder. Lightning respects `prefers-reduced-motion`.
+  - **Ambience director**: a pure, tested scheduler for random event timing, long
+    quiet periods, and brief **complete-silence** beats.
+  - **Procedural ambience**: an asset-free Web-Audio bed (two wind layers, insect
+    shimmer, power-line hum) with sparse one-shots (distant dog, metal creak,
+    electrical buzz, thunder); folds into the Ambience channel, honours mute,
+    suspends with the engine / on tab-hide, and no-ops without Web Audio.
+- Unit tests for the `AmbienceDirector` and `WindField` (suite now 47 tests).
+
+### Changed
+
+- `compound/lighting` returns its two lights so the atmosphere can modulate them;
+  `CompoundScene` builds, ticks, settings-wires and disposes the `AtmosphereManager`.
+- No new lights and no per-frame allocations; the only added render cost is the
+  GPU-side wind vertex shader.
+
 ## [0.4.0-alpha] — 2026-06-26
 
 Milestone 4 — **Core Gameplay Loop**: the universal interaction + inventory

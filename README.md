@@ -50,7 +50,8 @@ src/
 │   ├── GameEngine   Render loop owning the world + scene manager
 │   ├── scenes/      SceneManager, BaseScene lifecycle, scene contracts/ids
 │   ├── player/      First-person PlayerController (locomotion; exposes camera)
-│   └── interaction/ Generic interaction framework (registry, ray system, highlight)
+│   ├── interaction/ Generic interaction framework (registry, ray system, highlight)
+│   └── atmosphere/  Reusable AtmosphereManager (wind, sky, ambience synth)
 ├── systems/       Self-contained game systems (one responsibility each)
 │   ├── audio/       AudioManager — channel mixing, mute, mobile unlock
 │   ├── save/        SaveSystem + SaveRepository port (localStorage adapter)

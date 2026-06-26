@@ -94,6 +94,27 @@ registers reusable `game/objects/` interactables (`Door`, `Switch`, `Generator`,
 `Lamp`, `PickupItem`) with the engine's `InteractionRegistry`. No gameplay logic
 lives in the scene or the geometry.
 
+### 4a. Atmosphere
+
+The compound is driven by a reusable, data-driven `AtmosphereManager`
+(`engine/atmosphere/`, tuned by `shared/constants/atmosphere.ts`). It modulates
+what the scene already owns — it never adds lights or geometry:
+
+- **Wind** gusts a strength scalar that (a) sways the canopy and cotton via a GPU
+  vertex shader (`WindMaterialPlugin`, zero per-instance CPU; trunks stay rigid)
+  and (b) drives the wind audio layers.
+- **Sky** drifts fog density and moonlight, and fires rare, **silent distant
+  lightning** (a flash on the moon + ambient lights — no rain), with delayed
+  thunder.
+- **Ambience** is a procedural Web-Audio bed (wind, insects, power-line hum) plus
+  randomly-timed one-shots (a far dog, a metal creak, an electrical buzz),
+  punctuated by **long quiet periods** and brief **complete-silence beats**.
+
+The intent is sustained low-grade unease from the environment itself —
+**no enemies, anomalies or scripted scares** (those arrive with the horror
+track). Authoring tension is a matter of editing the atmosphere constants, not
+code.
+
 ## 5. Anomaly placement: anchors
 
 Anomalies spawn at **anchors** — authored `Vec3` positions a scene passes to

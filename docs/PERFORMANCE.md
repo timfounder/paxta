@@ -94,6 +94,12 @@ The loop lives in `GameEngine.tick` and `World.update`.
   (the Hallway pattern). Real-time shadows are off by default; justify any shadow.
 - **R-PERF-17 Texture budget.** Per scene ≤ 8 MB of GPU textures; power-of-two,
   compressed where the webview supports it; atlas small props.
+- **R-PERF-18a Atmosphere is cheap by construction.** Vegetation wind is a GPU
+  vertex shader fed one shared uniform per frame — **never** per-instance CPU work.
+  The `AtmosphereManager` splits cheap per-frame eases from a 5 Hz scheduling tick,
+  allocates nothing on the per-frame path (audio one-shots are sparse and
+  short-lived), adds **no** lights (it modulates the existing two), and suspends
+  the Web-Audio graph with the engine and on tab-hide (R-PERF-8).
 
 ## 7. Asset budgets (per chapter)
 

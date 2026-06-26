@@ -226,11 +226,43 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
+### M5 — Atmosphere Framework (dynamic tension) ✅
+> **Inserted before the horror track.** The Director scoped M5 as a reusable,
+> data-driven atmosphere system — tension from the *environment itself*, with no
+> enemy, anomaly or scripted scare — the bed the later horror systems sit on. The
+> provisional horror numbers below are unchanged.
+- **Goal:** make the night feel alive and uneasy through slow, randomly-timed
+  environmental change; the atmosphere becomes a core, reusable gameplay system.
+- **Architecture:** a reusable `AtmosphereManager` (`engine/atmosphere/`) composing
+  four data-driven units behind one update seam: a `WindField` (gusting strength +
+  a GPU `WindMaterialPlugin` that sways the canopy/cotton on the vertex shader — no
+  per-instance CPU), a `SkyMood` (drifting fog density + moonlight, rare silent
+  distant lightning that only modulates the two existing lights), a **pure**
+  `AmbienceDirector` (random event timing, long quiet periods, complete-silence
+  beats), and a `ProceduralAmbience` Web-Audio synth (wind layers, insects,
+  power-line hum, one-shot dog / creak / buzz / thunder — **no audio assets**). All
+  tuning lives in `shared/constants/atmosphere.ts`. Cheap per-frame eases are split
+  from a 5 Hz scheduling tick; the audio graph suspends with the engine and on tab
+  hide; lightning respects reduced-motion.
+- **Depends on:** M3 (the compound: lights, fog, vegetation materials), GameEngine
+  loop, EventBus (`engine:paused`/`resumed`).
+- **Playable:** stand in the compound — the trees and cotton stir in shifting wind,
+  fog and moonlight breathe, a far-off dog or a metal creak punctuates long quiet
+  stretches, the power lines hum, and every so often the world goes utterly silent
+  or a soundless flash lights the sky. Nothing is hunting you.
+- **DoD:** reusable + fully data-driven; no monsters / anomalies / scripted scares;
+  allocation-free per-frame path; GPU wind (zero per-instance CPU); ≤4 lights held;
+  audio degrades to a silent no-op without Web Audio; gates green (47 unit tests;
+  wind shader verified compiling under headless SwiftShader). **No horror systems.**
+- **Size:** L.
+
+---
+
 > **Horror track — provisional numbering.** The milestones below (still labelled
 > M4–M12) predate the Director's M2–M4 reseries and are **planning placeholders**;
 > their numbers, build-order and dependency references will be reassigned when
 > reached. The shipped sequence to date is M0 → M2 (Player) → M3 (Compound) →
-> M4 (Core Gameplay Loop, above).
+> M4 (Core Gameplay Loop) → M5 (Atmosphere Framework, above).
 
 ### M4 — Doubt + Audio & Environmental kinds
 - **Goal:** the full three-kind perception game with **psychological doubt**.

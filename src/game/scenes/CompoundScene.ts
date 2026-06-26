@@ -1,5 +1,6 @@
 import { Color3, Color4, Scene, Vector3, type Mesh } from '@babylonjs/core';
 
+import { AtmosphereManager } from '@engine/atmosphere/AtmosphereManager';
 import { InteractionRegistry } from '@engine/interaction/InteractionRegistry';
 import { InteractionSystem } from '@engine/interaction/InteractionSystem';
 import type { InteractionContext, Updatable } from '@engine/interaction/types';
@@ -10,6 +11,8 @@ import { SceneIds } from '@engine/scenes/sceneIds';
 import type { SceneId } from '@shared/types/branded';
 import type { Vec3 } from '@shared/types/spatial';
 import { Inventory } from '@systems/inventory/Inventory';
+import { AudioChannel } from '@systems/audio/audio.types';
+import { useSettingsStore } from '@state/settingsStore';
 
 import { Door } from '../objects/Door';
 import { Generator } from '../objects/Generator';
@@ -51,6 +54,8 @@ export class CompoundScene extends BaseScene implements ControllableScene {
   private readonly pickups = new Map<string, PickupItem>();
   private readonly updatables: Updatable[] = [];
   private interactions: InteractionSystem | null = null;
+  private atmosphere: AtmosphereManager | null = null;
+  private settingsUnsub: (() => void) | null = null;
 
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
@@ -60,7 +65,7 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     scene.fogColor = new Color3(0.03, 0.035, 0.05);
     scene.fogDensity = 0.014;
 
-    buildLighting(scene);
+    const lighting = buildLighting(scene);
     const palette = createCompoundPalette(scene);
     buildTerrain(scene, palette);
     buildStructures(scene, palette);
@@ -74,6 +79,19 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     const context: InteractionContext = { events: this.context.events };
     this.interactions = new InteractionSystem(scene, this.player.camera, this.registry, context);
 
+    this.atmosphere = new AtmosphereManager(
+      {
+        scene,
+        moon: lighting.moon,
+        ambient: lighting.ambient,
+        // Canopy + cotton sway in the wind; trunks stay rigid.
+        windMaterials: [palette.foliage, palette.cottonPlant, palette.cottonBoll],
+      },
+      this.context.events,
+    );
+    this.wireAtmosphereSettings(this.atmosphere);
+    this.atmosphere.unlock();
+
     this.restorePersisted();
     return Promise.resolve();
   }
@@ -82,10 +100,15 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     this.player?.update(deltaSeconds);
     for (const updatable of this.updatables) updatable.update(deltaSeconds);
     this.interactions?.update(deltaSeconds);
+    this.atmosphere?.update(deltaSeconds);
   }
 
   protected override onUnload(): void {
     this.persist();
+    this.settingsUnsub?.();
+    this.settingsUnsub = null;
+    this.atmosphere?.dispose();
+    this.atmosphere = null;
     this.interactions?.dispose();
     this.interactions = null;
     this.player?.dispose();
@@ -187,6 +210,18 @@ export class CompoundScene extends BaseScene implements ControllableScene {
       DROP_HEIGHT,
       origin.z + forward.z * DROP_REACH,
     );
+  }
+
+  /** Keep the atmosphere's ambience bed in step with the user's audio settings. */
+  private wireAtmosphereSettings(atmosphere: AtmosphereManager): void {
+    const apply = (state: ReturnType<typeof useSettingsStore.getState>): void => {
+      atmosphere.setVolume(
+        state.volumes[AudioChannel.Master] * state.volumes[AudioChannel.Ambience],
+      );
+      atmosphere.setMuted(state.muted);
+    };
+    apply(useSettingsStore.getState());
+    this.settingsUnsub = useSettingsStore.subscribe(apply);
   }
 
   // -- Persistence -----------------------------------------------------------

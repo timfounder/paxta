@@ -69,6 +69,28 @@ Sound is a *channel of perception*, parallel to sight (GAMEPLAY §3).
 - **R-MIX-4 No fatigue loops.** Ambience loops are ≥ 20 s and seamless; short
   repetitive loops read as fake and break immersion.
 
+## 5a. Procedural ambience (the atmosphere)
+
+The environmental bed is **synthesised**, not sampled. `ProceduralAmbience`
+(`engine/atmosphere/`) builds the night out of Web-Audio primitives — filtered
+noise for wind layers and the insect shimmer, oscillators for the power-line hum,
+short enveloped voices for one-shots (distant dog, metal creak, electrical buzz,
+thunder). This sidesteps the loop-fatigue and asset-budget problems entirely and
+makes the whole bed **data-driven** from `shared/constants/atmosphere.ts`.
+
+- **R-AMB-1 No assets for ambience.** The atmosphere bed ships no audio files; it
+  is generated. Sampled `.ogg` (R-AUD-8) is for *authored* cues (music, anomaly
+  voices), not the procedural night.
+- **R-AMB-2 Same mixer, same mute.** Procedural output is folded into the
+  **Ambience** channel: effective gain = `master × ambience`, and **mute is
+  absolute** (R-AUD-5). It also suspends with the engine and on tab-hide.
+- **R-AMB-3 Unlock like everything else.** The audio graph is created suspended and
+  resumes only on a user gesture (R-AUD-2); it self-installs a one-time gesture
+  listener and degrades to a silent no-op where Web Audio is unavailable.
+- **R-AMB-4 Silence is a tool, used sparingly.** Unlike R-MIX-3, the atmosphere may
+  duck to near-silence for brief, randomly-timed beats — the dead-air *is* the
+  effect. Keep them rare and short (see `ATMOSPHERE.AMBIENCE`).
+
 ## 6. Asset format & budget
 
 PAXTA runs in a webview on low-end phones over mobile data (PERFORMANCE).

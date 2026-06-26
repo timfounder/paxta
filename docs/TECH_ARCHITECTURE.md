@@ -65,7 +65,8 @@ src/
 │   └── ecs/     Entity · Component · System · World · LifetimeSystem
 ├── engine/      GameEngine (render loop), scenes/ (SceneManager, BaseScene,
 │                 contracts, sceneIds), player/ (motor, look, head-bob),
-│                 interaction/ (registry, system, highlight, interfaces)
+│                 interaction/ (registry, system, highlight, interfaces),
+│                 atmosphere/ (manager, wind, sky, ambience director + synth)
 │                 ── generic Babylon
 ├── systems/     audio/ save/ quest/ anomaly/ inventory/  ── game systems
 ├── game/        Game (composition root), scenes/ (CompoundScene + compound/
@@ -101,6 +102,7 @@ chunks tree-shakeable and dependencies explicit).
 | `SaveSystem` | `systems/save/` | Versioned persistence via a `SaveRepository` port. |
 | `QuestSystem` | `systems/quest/` | Directive/objective state machine. |
 | `Inventory` | `systems/inventory/` | Pure carried-items store (capacity, uniqueness, carry order); emits `inventory:changed`. Framework-free. |
+| `AtmosphereManager` | `engine/atmosphere/` | Reusable, data-driven environmental tension: wind (GPU vertex sway), fog/moonlight drift, silent lightning, and a procedural Web-Audio ambience bed. No enemies/anomalies/scares. |
 | `Game` | `game/Game.ts` | Composition root + façade for React. |
 
 **R-SYS-1** Each system has exactly one responsibility (SRP). If you can't name it
