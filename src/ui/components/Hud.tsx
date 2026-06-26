@@ -8,6 +8,7 @@ import { InteractionPrompt } from './InteractionPrompt';
 import { InventoryBar } from './InventoryBar';
 import { LookLayer } from './LookLayer';
 import { MovementJoystick } from './MovementJoystick';
+import { NightDirectorPanel } from './NightDirectorPanel';
 import { Reticle } from './Reticle';
 
 interface HudProps {
@@ -37,6 +38,7 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
 
       <InventoryBar />
       <AnomalyDebugOverlay game={game} />
+      <NightDirectorPanel game={game} />
       <MovementJoystick onChange={(x, y) => game?.setMoveInput(x, y)} />
       <ActionButtons game={game} />
     </div>

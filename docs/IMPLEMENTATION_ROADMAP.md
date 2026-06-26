@@ -292,11 +292,48 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
+### M7 — Night Director (data-driven orchestration) ✅
+> **Inserted before the horror track.** The Director scoped M7 as the top-level
+> pacing brain that orchestrates the whole night — phases, tension, progression —
+> by coordinating M5 (atmosphere) and M6 (anomalies) from data, with no hardcoded
+> scripts. Provisional horror numbers unchanged.
+- **Goal:** orchestrate the complete experience — pacing, tension, progression —
+  from data; the architecture supports unlimited future nights.
+- **Architecture:** a pure framework in `systems/night/` — `NightDirector`
+  (advances the six phases on their configured durations, eases tension into the
+  atmosphere, enables each phase's anomaly set, drives events), `NightState`
+  (phase / elapsed / tension / objectives / fired bookkeeping), `NightTimeline`
+  (timeline + weighted-random scheduling: mandatory / optional / cooldown /
+  dependency / conditions), `NightSequence` runner, and type-keyed `NightCondition`
+  (generator / hasItem / objective / phase / mission / flag) and `NightAction`
+  (trigger/enable/disable anomaly, setTension, flash, dialogue, start/complete
+  objective, startSequence, setFlag) registries. The six phases — **Preparation,
+  Calm, Suspicion, Escalation, Peak, Resolution** — are pure data with per-phase
+  tension, duration and anomaly set. `NightContext` ports keep it Babylon-free; the
+  game layer (`game/night/`) wires them to the anomaly manager, the atmosphere
+  (tension → net bias), the world and dialogue. The example night lives in
+  `game/content/nights.ts`. A developer panel (debug-gated) skips phases, force-
+  fires events, inspects live state and visualises the timeline.
+- **Depends on:** M5 (atmosphere), M6 (anomaly engine), the interaction registry,
+  the inventory.
+- **Playable:** the compound now runs a paced night — tension and the active
+  anomaly set ramp through the phases, with timeline beats, random flavour and a
+  peak sequence; the debug panel drives and visualises it.
+- **DoD:** fully data-driven (no hardcoded night content/values); supports
+  unlimited nights; minimal allocation (compile-once events, coarse evaluation);
+  the panel skips/triggers/inspects/visualises; gates green (67 unit tests;
+  runtime-verified phase advance + event firing under headless SwiftShader).
+  **No monster, no scripted scare — only orchestration.**
+- **Size:** XL.
+
+---
+
 > **Horror track — provisional numbering.** The milestones below (still labelled
 > M4–M12) predate the Director's M2–M4 reseries and are **planning placeholders**;
 > their numbers, build-order and dependency references will be reassigned when
 > reached. The shipped sequence to date is M0 → M2 (Player) → M3 (Compound) →
-> M4 (Core Gameplay Loop) → M5 (Atmosphere Framework) → M6 (Anomaly Engine, above).
+> M4 (Core Gameplay Loop) → M5 (Atmosphere Framework) → M6 (Anomaly Engine) →
+> M7 (Night Director, above).
 
 ### M4 — Doubt + Audio & Environmental kinds
 - **Goal:** the full three-kind perception game with **psychological doubt**.

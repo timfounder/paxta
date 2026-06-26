@@ -8,7 +8,9 @@ import { useInventoryStore } from '@state/inventoryStore';
 import { Screen, useUiStore } from '@state/uiStore';
 import { useSettingsStore } from '@state/settingsStore';
 import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
+import { useNightDebugStore } from '@state/nightDebugStore';
 import { isAnomalyDebuggable, type AnomalyDebuggable } from './anomaly/anomalyDebug';
+import { isNightDebuggable, type NightDebuggable } from './night/nightDebug';
 import { AudioChannel } from '@systems/audio/audio.types';
 import { AudioManager } from '@systems/audio/AudioManager';
 import { PLAYER } from '@shared/constants/game';
@@ -130,6 +132,22 @@ export class Game {
     this.anomalyDebuggable?.triggerAnomaly(id);
   }
 
+  /** The active scene if it exposes the Night Director debug surface, else null. */
+  private get nightDebuggable(): NightDebuggable | null {
+    const scene = this.engine?.scenes.activeScene;
+    return scene && isNightDebuggable(scene) ? scene : null;
+  }
+
+  /** Night Director panel: advance to the next phase. */
+  public skipNightPhase(): void {
+    this.nightDebuggable?.skipNightPhase();
+  }
+
+  /** Night Director panel: force-fire a night event by id. */
+  public triggerNightEvent(id: string): void {
+    this.nightDebuggable?.triggerNightEvent(id);
+  }
+
   public pause(): void {
     this.setMoveInput(0, 0);
     this.controllable?.setSprint(false);
@@ -151,6 +169,7 @@ export class Game {
     useGameStore.getState().reset();
     useInventoryStore.getState().reset();
     useAnomalyDebugStore.getState().reset();
+    useNightDebugStore.getState().reset();
     useUiStore.getState().setHudVisible(false);
     useUiStore.getState().setInteractionPrompt(null);
     useUiStore.getState().setScreen(Screen.Menu);

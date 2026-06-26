@@ -13,12 +13,17 @@ import type { Vec3 } from '@shared/types/spatial';
 import { Inventory } from '@systems/inventory/Inventory';
 import { AudioChannel } from '@systems/audio/audio.types';
 import { AnomalyManager } from '@systems/anomaly/AnomalyManager';
+import { NightDirector } from '@systems/night/NightDirector';
 import { useSettingsStore } from '@state/settingsStore';
 import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
+import { useNightDebugStore } from '@state/nightDebugStore';
 
 import { CompoundAnomalyContext } from '../anomaly/CompoundAnomalyContext';
 import type { AnomalyDebuggable, AnomalyDebugEntry } from '../anomaly/anomalyDebug';
+import { CompoundNightContext } from '../night/CompoundNightContext';
+import type { NightDebuggable, NightStateView, NightTimelineEntryView } from '../night/nightDebug';
 import { COMPOUND_ANOMALIES } from '../content/anomalies';
+import { COMPOUND_NIGHT } from '../content/nights';
 import { Door } from '../objects/Door';
 import { Generator } from '../objects/Generator';
 import { Lamp } from '../objects/Lamp';
@@ -50,7 +55,10 @@ const DOOR_OPEN_ANGLE = -Math.PI * 0.52;
  * state is persisted per scene. The scene only *wires* reusable systems; no
  * gameplay behaviour lives here. No horror systems yet.
  */
-export class CompoundScene extends BaseScene implements ControllableScene, AnomalyDebuggable {
+export class CompoundScene
+  extends BaseScene
+  implements ControllableScene, AnomalyDebuggable, NightDebuggable
+{
   public readonly id: SceneId = SceneIds.Compound;
 
   private player: PlayerController | null = null;
@@ -63,6 +71,7 @@ export class CompoundScene extends BaseScene implements ControllableScene, Anoma
   private settingsUnsub: (() => void) | null = null;
   private anomalyContext: CompoundAnomalyContext | null = null;
   private anomalies: AnomalyManager | null = null;
+  private night: NightDirector | null = null;
 
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
@@ -100,6 +109,7 @@ export class CompoundScene extends BaseScene implements ControllableScene, Anoma
     this.atmosphere.unlock();
 
     this.buildAnomalyEngine(this.player, this.atmosphere);
+    this.buildNight(this.player, this.atmosphere);
 
     this.restorePersisted();
     return Promise.resolve();
@@ -109,6 +119,9 @@ export class CompoundScene extends BaseScene implements ControllableScene, Anoma
     this.player?.update(deltaSeconds);
     for (const updatable of this.updatables) updatable.update(deltaSeconds);
     this.interactions?.update(deltaSeconds);
+    // The director paces the night (tension + anomaly sets) before the
+    // atmosphere/anomaly systems consume those changes.
+    this.night?.update(deltaSeconds);
     this.atmosphere?.update(deltaSeconds);
     this.anomalyContext?.tick(deltaSeconds);
     this.anomalies?.update(deltaSeconds);
@@ -118,6 +131,9 @@ export class CompoundScene extends BaseScene implements ControllableScene, Anoma
     this.persist();
     this.settingsUnsub?.();
     this.settingsUnsub = null;
+    this.night?.dispose();
+    this.night = null;
+    useNightDebugStore.getState().reset();
     this.anomalies?.dispose();
     this.anomalies = null;
     this.anomalyContext?.dispose();
@@ -183,6 +199,24 @@ export class CompoundScene extends BaseScene implements ControllableScene, Anoma
 
   public triggerAnomaly(id: string): void {
     this.anomalies?.forceTrigger(id);
+  }
+
+  // -- Night Director debug surface (NightDebuggable) ------------------------
+
+  public skipNightPhase(): void {
+    this.night?.skipPhase();
+  }
+
+  public triggerNightEvent(id: string): void {
+    this.night?.triggerEvent(id);
+  }
+
+  public getNightState(): NightStateView | null {
+    return this.night?.getStateView() ?? null;
+  }
+
+  public getNightTimeline(): readonly NightTimelineEntryView[] {
+    return this.night?.getTimelineView() ?? [];
   }
 
   // -- Wiring ----------------------------------------------------------------
@@ -271,6 +305,26 @@ export class CompoundScene extends BaseScene implements ControllableScene, Anoma
     this.anomalyContext = context;
     this.anomalies = manager;
     useAnomalyDebugStore.getState().setEntries(manager.getDebugSnapshot());
+  }
+
+  /** Build and start the data-driven Night Director over the example night. */
+  private buildNight(player: PlayerController, atmosphere: AtmosphereManager): void {
+    const anomalies = this.anomalies;
+    if (!anomalies) return;
+    const context = new CompoundNightContext({
+      anomalies,
+      atmosphere,
+      player,
+      registry: this.registry,
+      inventory: this.inventory,
+      events: this.context.events,
+    });
+    const director = new NightDirector(COMPOUND_NIGHT, context, {
+      onChange: () =>
+        useNightDebugStore.getState().set(director.getStateView(), director.getTimelineView()),
+    });
+    this.night = director;
+    director.start();
   }
 
   // -- Persistence -----------------------------------------------------------

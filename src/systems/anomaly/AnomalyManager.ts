@@ -107,6 +107,11 @@ export class AnomalyManager {
     this.activate(compiled, this.context.now());
   }
 
+  /** Number of anomalies currently active (read by the Night Director). */
+  public activeCount(): number {
+    return this.active.length;
+  }
+
   public getDebugSnapshot(): readonly AnomalyDebugEntry[] {
     return this.order.map((compiled) => ({
       id: compiled.def.id,

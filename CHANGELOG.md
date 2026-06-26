@@ -8,6 +8,40 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
+## [Unreleased]
+
+Milestone 7 — **Night Director**: data-driven orchestration of the complete
+night — pacing, tension and progression — with no hardcoded scripts. No monster,
+no scripted scare; it coordinates the existing atmosphere and anomaly systems.
+Pending approval and tag.
+
+### Added
+
+- **Night Director framework** (`systems/night/`, pure / Babylon-free):
+  - `NightDirector` — advances the six phases (**Preparation, Calm, Suspicion,
+    Escalation, Peak, Resolution**) on their configured durations, eases tension
+    into the atmosphere, enables each phase's anomaly set, and drives events.
+  - `NightState` (phase / elapsed / tension / objectives / fired bookkeeping),
+    `NightTimeline` (timeline + weighted-random scheduling: mandatory / optional /
+    cooldown / dependency / conditions), `NightSequence` runner.
+  - Type-keyed `NightCondition` (generator, hasItem, objective, phase, mission,
+    flag) and `NightAction` (trigger/enable/disable anomaly, setTension, flash,
+    dialogue, start/complete objective, startSequence, setFlag) registries.
+  - `NightContext` ports keep the engine decoupled; the night is pure data.
+- **Game-layer wiring** (`game/night/`): a `CompoundNightContext` fulfilling the
+  ports — anomalies via the `AnomalyManager`, tension folded into the atmosphere as
+  a net bias, world facts and dialogue. The example night is `game/content/nights.ts`.
+- **Developer panel** (`NightDirectorPanel`, debug-gated): current phase + tension,
+  a clickable timeline visualisation (force-fire events), random/sequence chips,
+  live objectives, and skip-phase — mirrored through `nightDebugStore`.
+- Unit tests for the director (phases, timeline, skip, trigger; suite now 67 tests).
+
+### Changed
+
+- `AnomalyManager` exposes `activeCount()` for the director's state view.
+- The compound now runs a paced night by default (atmosphere tension + the active
+  anomaly set ramp through the phases) — environmental only.
+
 ## [0.6.0-alpha] — 2026-06-26
 
 Milestone 6 — **Anomaly Engine**: a production, data-driven anomaly framework that

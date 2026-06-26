@@ -289,6 +289,147 @@ body {
   border-radius: 999px;
 }
 
+.night-panel {
+  position: absolute;
+  top: calc(58px + env(safe-area-inset-top));
+  right: calc(var(--space-sm) + env(safe-area-inset-right));
+  z-index: 3;
+  width: 270px;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: var(--space-xs) var(--space-sm) var(--space-sm);
+  font-size: 0.66rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.night-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.night-panel__phase {
+  flex: 1 1 auto;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.night-panel__tension {
+  flex: 0 0 48px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tg-secondary-bg);
+  overflow: hidden;
+}
+
+.night-panel__tensionfill {
+  display: block;
+  height: 100%;
+  background: var(--danger);
+  transition: width 0.3s linear;
+}
+
+.night-panel__anom {
+  flex: 0 0 auto;
+  color: var(--warning);
+  font-variant-numeric: tabular-nums;
+}
+
+.night-panel__skip {
+  flex: 0 0 auto;
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.night-track {
+  position: relative;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.night-track__now {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--safe);
+  transform: translateX(-1px);
+}
+
+.night-mark {
+  position: absolute;
+  top: 2px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  padding: 0;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.25);
+  pointer-events: auto;
+}
+
+.night-mark--mand {
+  border-radius: 50%;
+}
+
+.night-mark--fired {
+  background: var(--danger);
+  border-color: transparent;
+}
+
+.night-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.night-chip {
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.6rem;
+}
+
+.night-chip--fired {
+  background: rgba(179, 18, 43, 0.4);
+  border-color: transparent;
+}
+
+.night-objectives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--tg-hint);
+}
+
+.night-obj--complete {
+  color: var(--safe);
+}
+
+.night-obj--active {
+  color: var(--tg-text);
+}
+
 .anomaly-debug {
   position: absolute;
   top: calc(64px + env(safe-area-inset-top));

@@ -9,12 +9,13 @@ documents disagree, the **owner** of the disputed fact (see table) wins.
 > universal interaction + inventory foundation), M5 (Atmosphere Framework — a
 > reusable, data-driven environmental tension system: dynamic wind, fog and
 > moonlight, silent lightning, and a procedural ambience bed), M6 (Anomaly
-> Engine — a data-driven anomaly framework with a developer overlay; no gameplay
-> wired yet). Game design complete (see [design/GDD](./design/GDD.md)).
-> **Production Mode is in force** — every milestone follows
-> [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
+> Engine — a data-driven anomaly framework with a developer overlay), M7 (Night
+> Director — data-driven orchestration of the six-phase night: pacing, tension and
+> progression, with a developer panel). Game design complete (see
+> [design/GDD](./design/GDD.md)). **Production Mode is in force** — every milestone
+> follows [PRODUCTION_WORKFLOW](./PRODUCTION_WORKFLOW.md).
 > Next: horror systems (see [IMPLEMENTATION_ROADMAP](./IMPLEMENTATION_ROADMAP.md)).
-> Last reviewed: 2026-06-26 · Doc set version: 1.7
+> Last reviewed: 2026-06-26 · Doc set version: 1.8
 
 > **Two layers of docs.** The files in this folder are the **pillar docs**
 > (principles, standards, constraints). The detailed **game design** lives in
