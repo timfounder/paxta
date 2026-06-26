@@ -8,12 +8,11 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
-## [Unreleased]
+## [0.7.0-alpha] — 2026-06-26
 
 Milestone 7 — **Night Director**: data-driven orchestration of the complete
 night — pacing, tension and progression — with no hardcoded scripts. No monster,
 no scripted scare; it coordinates the existing atmosphere and anomaly systems.
-Pending approval and tag.
 
 ### Added
 
@@ -175,6 +174,7 @@ The Telegram Mini App shell: loading screen, main menu and settings, a playable
 empty level, mobile controls, and a lazily-loaded Babylon engine at a stable
 60 FPS.
 
+[0.7.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.7.0-alpha
 [0.6.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.6.0-alpha
 [0.5.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.5.0-alpha
 [0.4.0-alpha]: https://github.com/timfounder/paxta/releases/tag/v0.4.0-alpha
