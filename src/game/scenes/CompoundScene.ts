@@ -12,8 +12,13 @@ import type { SceneId } from '@shared/types/branded';
 import type { Vec3 } from '@shared/types/spatial';
 import { Inventory } from '@systems/inventory/Inventory';
 import { AudioChannel } from '@systems/audio/audio.types';
+import { AnomalyManager } from '@systems/anomaly/AnomalyManager';
 import { useSettingsStore } from '@state/settingsStore';
+import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
 
+import { CompoundAnomalyContext } from '../anomaly/CompoundAnomalyContext';
+import type { AnomalyDebuggable, AnomalyDebugEntry } from '../anomaly/anomalyDebug';
+import { COMPOUND_ANOMALIES } from '../content/anomalies';
 import { Door } from '../objects/Door';
 import { Generator } from '../objects/Generator';
 import { Lamp } from '../objects/Lamp';
@@ -45,7 +50,7 @@ const DOOR_OPEN_ANGLE = -Math.PI * 0.52;
  * state is persisted per scene. The scene only *wires* reusable systems; no
  * gameplay behaviour lives here. No horror systems yet.
  */
-export class CompoundScene extends BaseScene implements ControllableScene {
+export class CompoundScene extends BaseScene implements ControllableScene, AnomalyDebuggable {
   public readonly id: SceneId = SceneIds.Compound;
 
   private player: PlayerController | null = null;
@@ -56,6 +61,8 @@ export class CompoundScene extends BaseScene implements ControllableScene {
   private interactions: InteractionSystem | null = null;
   private atmosphere: AtmosphereManager | null = null;
   private settingsUnsub: (() => void) | null = null;
+  private anomalyContext: CompoundAnomalyContext | null = null;
+  private anomalies: AnomalyManager | null = null;
 
   protected onLoad(): Promise<void> {
     const scene = this.babylonScene;
@@ -92,6 +99,8 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     this.wireAtmosphereSettings(this.atmosphere);
     this.atmosphere.unlock();
 
+    this.buildAnomalyEngine(this.player, this.atmosphere);
+
     this.restorePersisted();
     return Promise.resolve();
   }
@@ -101,12 +110,19 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     for (const updatable of this.updatables) updatable.update(deltaSeconds);
     this.interactions?.update(deltaSeconds);
     this.atmosphere?.update(deltaSeconds);
+    this.anomalyContext?.tick(deltaSeconds);
+    this.anomalies?.update(deltaSeconds);
   }
 
   protected override onUnload(): void {
     this.persist();
     this.settingsUnsub?.();
     this.settingsUnsub = null;
+    this.anomalies?.dispose();
+    this.anomalies = null;
+    this.anomalyContext?.dispose();
+    this.anomalyContext = null;
+    useAnomalyDebugStore.getState().reset();
     this.atmosphere?.dispose();
     this.atmosphere = null;
     this.interactions?.dispose();
@@ -153,6 +169,20 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     if (!pickup || !this.inventory.remove(id)) return;
     pickup.drop(this.dropPosition(player));
     this.persist();
+  }
+
+  // -- Anomaly debug surface (AnomalyDebuggable) -----------------------------
+
+  public listAnomalies(): readonly AnomalyDebugEntry[] {
+    return this.anomalies?.getDebugSnapshot() ?? [];
+  }
+
+  public setAnomalyEnabled(id: string, enabled: boolean): void {
+    this.anomalies?.setEnabled(id, enabled);
+  }
+
+  public triggerAnomaly(id: string): void {
+    this.anomalies?.forceTrigger(id);
   }
 
   // -- Wiring ----------------------------------------------------------------
@@ -222,6 +252,25 @@ export class CompoundScene extends BaseScene implements ControllableScene {
     };
     apply(useSettingsStore.getState());
     this.settingsUnsub = useSettingsStore.subscribe(apply);
+  }
+
+  /** Build the data-driven anomaly engine and its compound-wired context. */
+  private buildAnomalyEngine(player: PlayerController, atmosphere: AtmosphereManager): void {
+    const context = new CompoundAnomalyContext({
+      scene: this.babylonScene,
+      player,
+      registry: this.registry,
+      inventory: this.inventory,
+      atmosphere,
+      events: this.context.events,
+    });
+    const manager = new AnomalyManager(context, {
+      onChange: () => useAnomalyDebugStore.getState().setEntries(manager.getDebugSnapshot()),
+    });
+    manager.registerAll(COMPOUND_ANOMALIES);
+    this.anomalyContext = context;
+    this.anomalies = manager;
+    useAnomalyDebugStore.getState().setEntries(manager.getDebugSnapshot());
   }
 
   // -- Persistence -----------------------------------------------------------

@@ -8,6 +8,43 @@ Releases are cut per engineering milestone (see
 [`docs/IMPLEMENTATION_ROADMAP.md`](./docs/IMPLEMENTATION_ROADMAP.md)) and tagged
 `vX.Y.Z-alpha` during the pre-1.0 alpha. Each milestone is independently playable.
 
+## [Unreleased]
+
+Milestone 6 — **Anomaly Engine**: a production, data-driven anomaly framework that
+controls environmental change with no hardcoded gameplay logic. No gameplay, no
+monster, no scripted horror — only the framework. Pending approval and tag.
+
+### Added
+
+- **Anomaly framework** (`systems/anomaly/`, pure / Babylon-free):
+  - `AnomalyManager` — compiles each definition once, then on a coarse tick
+    resolves expired anomalies, fires chains, and evaluates idle ones
+    (trigger → schedule → conditions → probability), activating at most one
+    (weighted) per tick. Holds no anomaly logic itself.
+  - `AnomalyScheduler` — random / weighted / cooldown / one-time / repeatable /
+    chained / night-progression / dependency rules (pure, unit-tested).
+  - Type-keyed registries for **conditions** (position, time, interactable,
+    inventory, mission, weather), **effects** (fog, wind, light, lightning,
+    atmosphere, moveObject, hideObject, showObject, spawnObject, playSound,
+    dialogue) and **triggers** (scheduled, proximity) — a new kind is one factory.
+  - `AnomalyContext` ports keep the engine decoupled from Babylon; `ObjectPool`
+    backs pooled spawns.
+- **Game-layer wiring** (`game/anomaly/`): a `CompoundAnomalyContext` fulfilling
+  the ports from the player / interaction registry / inventory / atmosphere, and a
+  pooled `SceneObjectController` (move / hide / show / reset / spawn). Atmosphere
+  gained additive bias actuators (`addFogBias`/`addWindBias`/`addMoonBias`/
+  `flashLightning`/`triggerSound`). Example definitions in
+  `game/content/anomalies.ts`, shipped **disabled by default**.
+- **Developer overlay** (`AnomalyDebugOverlay`, debug-gated): enable / disable /
+  force-fire each anomaly, with live active-state and activation counts, mirrored
+  through `anomalyDebugStore`.
+- Unit tests for the scheduler and conditions (suite now 60 tests).
+
+### Changed
+
+- `InteractionRegistry` exposes `stateOf(id)` so conditions can read a Stateful
+  interactable's field (generator running, door open, …).
+
 ## [0.5.0-alpha] — 2026-06-26
 
 Milestone 5 — **Atmosphere Framework**: a reusable, data-driven system that

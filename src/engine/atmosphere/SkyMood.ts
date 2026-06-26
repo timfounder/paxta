@@ -31,6 +31,9 @@ export class SkyMood {
   private lightningTimer: number;
   private pendingDouble = false;
   private doubleTimer = 0;
+  /** External additive biases (anomaly effects), folded into the applied values. */
+  private fogBias = 0;
+  private moonBias = 0;
 
   constructor(
     private readonly bindings: AtmosphereBindings,
@@ -92,9 +95,25 @@ export class SkyMood {
       if (this.flash < 0.001) this.flash = 0;
     }
 
-    this.bindings.scene.fogDensity = this.fogCurrent;
-    this.bindings.moon.intensity = this.moonCurrent + this.flash * L.FLASH_INTENSITY;
+    this.bindings.scene.fogDensity = Math.max(0, this.fogCurrent + this.fogBias);
+    this.bindings.moon.intensity = Math.max(
+      0,
+      this.moonCurrent + this.moonBias + this.flash * L.FLASH_INTENSITY,
+    );
     this.bindings.ambient.intensity = this.ambientBase + this.flash * L.FLASH_INTENSITY * 0.6;
+  }
+
+  /** Anomaly hooks: additive biases (pass the negative to revert) and a forced flash. */
+  public addFogBias(delta: number): void {
+    this.fogBias += delta;
+  }
+
+  public addMoonBias(delta: number): void {
+    this.moonBias += delta;
+  }
+
+  public triggerFlash(): void {
+    if (!this.reducedMotion) this.strike();
   }
 
   /** Restore the lights/fog to a neutral resting state on teardown. */

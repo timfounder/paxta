@@ -258,11 +258,45 @@ on** · **Playable** (the testable build) · **Flag/Release** · **DoD** · **Si
 
 ---
 
+### M6 — Anomaly Engine (data-driven framework) ✅
+> **Inserted before the horror track.** The Director scoped M6 as the production
+> anomaly *framework* — the data-driven engine the horror milestones below will
+> express their content through — superseding the M0 spawn/score `AnomalySystem`
+> scaffold (left in place, unwired). Provisional horror numbers unchanged.
+- **Goal:** control environmental change with **no hardcoded gameplay logic** —
+  every anomaly is data; no anomaly requires an engine change.
+- **Architecture:** a pure framework in `systems/anomaly/` — `AnomalyManager`
+  (compile-once definitions, coarse evaluate → activate/resolve lifecycle, debug
+  API), `AnomalyScheduler` (random / weighted / cooldown / one-time / repeatable /
+  chained / night-gating / dependencies — pure, tested), and type-keyed registries
+  for `AnomalyCondition` (position / time / interactable / inventory / mission /
+  weather), `AnomalyEffect` (fog / wind / light / lightning / atmosphere / move /
+  hide / show / spawn / sound / dialogue) and `AnomalyTrigger` (scheduled /
+  proximity). Conditions/effects act through injected **ports** (`AnomalyContext`)
+  so the framework stays Babylon-free; the game layer (`game/anomaly/`) fulfils
+  them — atmosphere bias on `AtmosphereManager`, a pooled `SceneObjectController`,
+  ambience one-shots, toast dialogue. A developer overlay (debug-gated) enables /
+  disables / force-fires each anomaly. Example definitions live in
+  `game/content/anomalies.ts`, shipped **disabled** (framework, not gameplay).
+- **Depends on:** M3 (scene objects), M5 (atmosphere actuators), the interaction
+  registry, the inventory, EventBus.
+- **Playable:** nothing changes for the player by default; with the debug overlay
+  on, every example anomaly can be toggled and fired — fog rolls, lights dim,
+  objects move/spawn (pooled), a far bark or whisper, a chained blackout.
+- **DoD:** every anomaly is pure data; new kinds are one registered factory;
+  minimal allocation (compile-once, weighted-reservoir pick, pooled spawns); the
+  developer overlay enables/disables/tests each; gates green (60 unit tests;
+  runtime-verified firing effects under headless SwiftShader). **No monster, no
+  scripted horror — only the framework.**
+- **Size:** XL.
+
+---
+
 > **Horror track — provisional numbering.** The milestones below (still labelled
 > M4–M12) predate the Director's M2–M4 reseries and are **planning placeholders**;
 > their numbers, build-order and dependency references will be reassigned when
 > reached. The shipped sequence to date is M0 → M2 (Player) → M3 (Compound) →
-> M4 (Core Gameplay Loop) → M5 (Atmosphere Framework, above).
+> M4 (Core Gameplay Loop) → M5 (Atmosphere Framework) → M6 (Anomaly Engine, above).
 
 ### M4 — Doubt + Audio & Environmental kinds
 - **Goal:** the full three-kind perception game with **psychological doubt**.

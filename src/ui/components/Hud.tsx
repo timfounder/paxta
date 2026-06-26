@@ -2,6 +2,7 @@ import type { Game } from '@game/Game';
 import { useSettingsStore } from '@state/settingsStore';
 
 import { ActionButtons } from './ActionButtons';
+import { AnomalyDebugOverlay } from './AnomalyDebugOverlay';
 import { FpsMeter } from './FpsMeter';
 import { InteractionPrompt } from './InteractionPrompt';
 import { InventoryBar } from './InventoryBar';
@@ -35,6 +36,7 @@ export const Hud = ({ game }: HudProps): React.JSX.Element => {
       </div>
 
       <InventoryBar />
+      <AnomalyDebugOverlay game={game} />
       <MovementJoystick onChange={(x, y) => game?.setMoveInput(x, y)} />
       <ActionButtons game={game} />
     </div>

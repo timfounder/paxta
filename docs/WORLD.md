@@ -117,9 +117,14 @@ code.
 
 ## 5. Anomaly placement: anchors
 
-Anomalies spawn at **anchors** — authored `Vec3` positions a scene passes to
-`AnomalySystem.start({ sceneId, anchors })`. No scene wires anchors yet; the
-compound gains them with the horror track (IMPLEMENTATION_ROADMAP).
+Anomalies are now produced by the **data-driven anomaly engine** (`AnomalyManager`,
+TECH_ARCHITECTURE): each anomaly is a definition (trigger · schedule · conditions ·
+effects) in `game/content/anomalies.ts`, with positions carried as condition/effect
+params (`position`, `proximity`, `spawnObject.at`) rather than a separate anchor
+list. The compound wires the engine but ships its examples **disabled** — the
+framework is in place; authored horror content arrives with the horror track
+(IMPLEMENTATION_ROADMAP). The legacy spawn/score `AnomalySystem` (anchors) remains
+as M0 scaffold, unwired.
 
 Anchor rules:
 - **R-ANC-1** Every anchor must be **visible from a reachable standing position**

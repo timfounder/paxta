@@ -79,6 +79,36 @@ export class AtmosphereManager {
     this.ambience.setMuted(muted);
   }
 
+  // -- Actuation (anomaly effects modulate the atmosphere through these) ------
+
+  /** Current wind strength 0..1 (read by anomaly "weather" conditions). */
+  public windStrength(): number {
+    return this.wind.strength;
+  }
+
+  public addFogBias(delta: number): void {
+    this.sky.addFogBias(delta);
+  }
+
+  public addWindBias(delta: number): void {
+    this.wind.addBias(delta);
+  }
+
+  public addMoonBias(delta: number): void {
+    this.sky.addMoonBias(delta);
+  }
+
+  public flashLightning(): void {
+    this.sky.triggerFlash();
+  }
+
+  /** Play a procedural ambience one-shot by cue name (no-op if unknown). */
+  public triggerSound(cue: string): void {
+    if (cue === 'dog' || cue === 'creak' || cue === 'buzz' || cue === 'insectSwell') {
+      this.ambience.trigger(cue);
+    }
+  }
+
   /** Advance the atmosphere. Cheap eases run every frame; scheduling at 5 Hz. */
   public update(deltaSeconds: number): void {
     this.wind.update(deltaSeconds);

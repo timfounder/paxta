@@ -7,6 +7,8 @@ import { GamePhase, useGameStore } from '@state/gameStore';
 import { useInventoryStore } from '@state/inventoryStore';
 import { Screen, useUiStore } from '@state/uiStore';
 import { useSettingsStore } from '@state/settingsStore';
+import { useAnomalyDebugStore } from '@state/anomalyDebugStore';
+import { isAnomalyDebuggable, type AnomalyDebuggable } from './anomaly/anomalyDebug';
 import { AudioChannel } from '@systems/audio/audio.types';
 import { AudioManager } from '@systems/audio/AudioManager';
 import { PLAYER } from '@shared/constants/game';
@@ -112,6 +114,22 @@ export class Game {
     this.controllable?.dropItem();
   }
 
+  /** The active scene if it exposes the anomaly debug surface, else null. */
+  private get anomalyDebuggable(): AnomalyDebuggable | null {
+    const scene = this.engine?.scenes.activeScene;
+    return scene && isAnomalyDebuggable(scene) ? scene : null;
+  }
+
+  /** Developer overlay: enable/disable an anomaly by id. */
+  public setAnomalyEnabled(id: string, enabled: boolean): void {
+    this.anomalyDebuggable?.setAnomalyEnabled(id, enabled);
+  }
+
+  /** Developer overlay: force-fire an anomaly by id. */
+  public triggerAnomaly(id: string): void {
+    this.anomalyDebuggable?.triggerAnomaly(id);
+  }
+
   public pause(): void {
     this.setMoveInput(0, 0);
     this.controllable?.setSprint(false);
@@ -132,6 +150,7 @@ export class Game {
     this.engine?.pause('manual');
     useGameStore.getState().reset();
     useInventoryStore.getState().reset();
+    useAnomalyDebugStore.getState().reset();
     useUiStore.getState().setHudVisible(false);
     useUiStore.getState().setInteractionPrompt(null);
     useUiStore.getState().setScreen(Screen.Menu);

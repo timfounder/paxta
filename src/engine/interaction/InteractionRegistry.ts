@@ -30,6 +30,12 @@ export class InteractionRegistry {
     return this.byId.values();
   }
 
+  /** The current saved state of one interactable (for queries), or null. */
+  public stateOf(id: InteractableId): InteractableState | null {
+    const interactable = this.byId.get(id);
+    return interactable && isStateful(interactable) ? interactable.saveState() : null;
+  }
+
   /** Capture every stateful interactable's state. */
   public snapshot(): InteractionSnapshot {
     const snapshot: InteractionSnapshot = {};

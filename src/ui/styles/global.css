@@ -289,6 +289,94 @@ body {
   border-radius: 999px;
 }
 
+.anomaly-debug {
+  position: absolute;
+  top: calc(64px + env(safe-area-inset-top));
+  left: calc(var(--space-sm) + env(safe-area-inset-left));
+  z-index: 3;
+  width: 248px;
+  max-height: 46vh;
+  overflow-y: auto;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: var(--space-xs);
+  font-size: 0.66rem;
+}
+
+.anomaly-debug__title {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tg-hint);
+  padding: 2px 4px 4px;
+}
+
+.anomaly-debug__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.anomaly-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.anomaly-row--active {
+  background: rgba(179, 18, 43, 0.28);
+}
+
+.anomaly-row__dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.anomaly-row--active .anomaly-row__dot {
+  background: var(--danger);
+}
+
+.anomaly-row__name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.anomaly-row__count {
+  flex: 0 0 auto;
+  color: var(--tg-hint);
+  font-variant-numeric: tabular-nums;
+}
+
+.anomaly-row__toggle,
+.anomaly-row__fire {
+  flex: 0 0 auto;
+  pointer-events: auto;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.anomaly-row__toggle--on {
+  background: var(--safe);
+  color: #06210f;
+  border-color: transparent;
+}
+
 .actions {
   position: absolute;
   right: calc(var(--space-lg) + env(safe-area-inset-right));

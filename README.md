@@ -56,15 +56,16 @@ src/
 │   ├── audio/       AudioManager — channel mixing, mute, mobile unlock
 │   ├── save/        SaveSystem + SaveRepository port (localStorage adapter)
 │   ├── quest/       QuestSystem — quest/objective state machine
-│   ├── anomaly/     AnomalySystem — spawn, sanity drain, report/miss scoring
-│   └── inventory/   Inventory — pure carried-items store (capacity, carry order)
+│   ├── inventory/   Inventory — pure carried-items store (capacity, carry order)
+│   └── anomaly/     Data-driven anomaly engine (manager, scheduler, kinds, pool)
 ├── game/          Concrete game: composition root + content (uses engine+systems)
 │   ├── Game         The façade React drives; wires every system together
 │   ├── scenes/      Concrete locations (CompoundScene + compound/ builders)
 │   ├── objects/     Reusable interactables (Door, Switch, Generator, Lamp, PickupItem)
+│   ├── anomaly/     Anomaly context + actuators wiring the engine to the scene
 │   ├── persistence/ Per-scene interaction + inventory state
-│   └── content/     Quest/objective definitions
-├── state/         Zustand stores: gameStore, uiStore, settingsStore, inventoryStore
+│   └── content/     Quest + anomaly definitions (data)
+├── state/         Zustand stores: gameStore, uiStore, settingsStore, inventoryStore, anomalyDebugStore
 ├── telegram/      Fail-safe wrapper over the Telegram Mini Apps platform
 ├── services/      External integrations (Supabase client — prepared)
 ├── app/           App-wide configuration (validated environment)

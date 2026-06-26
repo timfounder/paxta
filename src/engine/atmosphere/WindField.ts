@@ -20,6 +20,8 @@ export class WindField {
   private target: number;
   private gustTimer: number;
   private heading: number;
+  /** External additive bias (e.g. an anomaly gust), folded into the output. */
+  private bias = 0;
 
   constructor(random?: RandomSource) {
     this.random = random ?? (() => Math.random());
@@ -33,9 +35,14 @@ export class WindField {
     return this.state;
   }
 
-  /** Current gust strength, 0..1 — drives the wind audio mix. */
+  /** Current gust strength, 0..1 (incl. bias) — drives sway and the wind audio. */
   public get strength(): number {
-    return this.intensity;
+    return clamp(this.intensity + this.bias, 0, 1);
+  }
+
+  /** Add an external bias to the wind (anomaly effects); pass the negative to revert. */
+  public addBias(delta: number): void {
+    this.bias += delta;
   }
 
   /** Coarse tick: choose a new gust target and nudge the heading when due. */
@@ -50,9 +57,10 @@ export class WindField {
   /** Per-frame: ease toward the target, advance the (wrapped) sway phase. */
   public update(deltaSeconds: number): void {
     this.intensity = clamp(damp(this.intensity, this.target, W.CHANGE_RATE, deltaSeconds), 0, 1);
+    const effective = this.strength;
     this.state.phase =
-      (this.state.phase + deltaSeconds * W.SWAY_SPEED * (0.4 + this.intensity)) % TWO_PI;
-    const amplitude = this.intensity * W.SWAY_AMPLITUDE;
+      (this.state.phase + deltaSeconds * W.SWAY_SPEED * (0.4 + effective)) % TWO_PI;
+    const amplitude = effective * W.SWAY_AMPLITUDE;
     this.state.amplitudeX = Math.cos(this.heading) * amplitude;
     this.state.amplitudeZ = Math.sin(this.heading) * amplitude;
   }
